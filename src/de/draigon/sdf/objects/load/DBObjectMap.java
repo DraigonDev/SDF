@@ -16,9 +16,7 @@ import de.draigon.sdf.daos.util.DaoUtils;
  * @author
  */
 public class DBObjectMap {
-    private static final long serialVersionUID = -6482629649567083849L;
-
-    /** FIXME: Javadoc einfuegen */
+   /** FIXME: Javadoc einfuegen */
     Map<Relation, Object> referenceTypes = new HashMap<Relation, Object>();
 
     /** FIXME: Javadoc einfuegen */
