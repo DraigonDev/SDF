@@ -2,140 +2,225 @@ package de.draigon.sdf.connection;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.sql.SQLException;
 import java.util.Properties;
-
-import de.draigon.sdf.exception.DBException;
 
 
 /**
- * FIXME: Javadoc einfuegen
- *
- * @author
+ * ConnectionProperties object created from the db.properties file places in
+ * Project-Root, Src-Folder
+ * 
+ * @author Draigon Development
+ * @version 1.0
  */
 public class ConnectionProperties {
 
-    private static final String PROPERTIES_NAME = "db.properties";
+	/** name of the properties file */
+	private static final String PROPERTIES_NAME = "db.properties";
 
-    private static ConnectionProperties properties;
-    private String host;
-    private String username;
-    private String password;
-    private String database;
-    private String port;
-    private boolean embedded = false;
+	/** Instance for singleton */
+	private static ConnectionProperties properties;
 
-    private ConnectionProperties() {
+	private String host;
+	private String username;
+	private String password;
+	private String database;
+	private String port;
+	private boolean embedded = false;
 
-    }
+	public int poolsizeMin;
 
-    /**
-     * FIXME: Javadoc einfuegen
-     *
-     * @return
-     */
-    public static ConnectionProperties get() {
+	/** default value for max poolsize */
+	public int poolsizeMax;
 
-        if (properties == null) {
-            properties = new ConnectionProperties();
+	/** default value for the poolsize buffer */
+	public int poolsizeBuffer;
 
-            try {
-                properties.reload();
-            } catch (SQLException e) {
-                throw new DBException("No databaseproperties could be load.", e);
-            }
-        }
+	/**
+	 * private constructor to prevent initialisation
+	 */
+	private ConnectionProperties() {
 
-        return properties;
-    }
-    
-    public boolean isEmbedded() {
-        return embedded;
-    }
+	}
 
-    /**
-     * FIXME: Javadoc kontrollieren Liefert den Wert von database
-     *
-     * @return  Der Wert von database
-     */
-    public String getDatabase() {
-        return database;
-    }
+	/**
+	 * Returns the instance of the singleton. If not exists, a new instance is
+	 * created
+	 * 
+	 * @return instance of the singleton
+	 * @throws IOException
+	 *             if properties cant be load
+	 */
+	public static ConnectionProperties get() throws IOException {
 
-    /**
-     * FIXME: Javadoc kontrollieren Liefert den Wert von host
-     *
-     * @return  Der Wert von host
-     */
-    public String getHost() {
-        return host;
-    }
+		if (properties == null) {
+			properties = new ConnectionProperties();
 
-    /**
-     * FIXME: Javadoc kontrollieren Liefert den Wert von passwort
-     *
-     * @return  Der Wert von passwort
-     */
-    public String getPassword() {
-        return password;
-    }
+			try {
+				properties.reload();
+			} catch (IOException e) {
+				throw new IOException("No databaseproperties could be load.", e);
+			}
+		}
 
-    /**
-     * FIXME: Javadoc kontrollieren Liefert den Wert von port
-     *
-     * @return  Der Wert von port
-     */
-    public String getPort() {
-        return port;
-    }
+		return properties;
+	}
 
-    /**
-     * FIXME: Javadoc kontrollieren Liefert den Wert von username
-     *
-     * @return  Der Wert von username
-     */
-    public String getUsername() {
-        return username;
-    }
+	/**
+	 * Getter for property
+	 * 
+	 * @return value of the property
+	 */
+	public boolean isEmbedded() {
+		return embedded;
+	}
 
-    private void reload() throws SQLException {
+	/**
+	 * Getter for property
+	 * 
+	 * @return value of the property
+	 */
+	public String getDatabase() {
+		return database;
+	}
 
-        try {
+	/**
+	 * Getter for property
+	 * 
+	 * @return value of the property
+	 */
+	public String getHost() {
+		return host;
+	}
 
-            Properties properties = new Properties();
+	/**
+	 * Getter for property
+	 * 
+	 * @return value of the property
+	 */
+	public String getPassword() {
+		return password;
+	}
 
-            File propFile = new File(PROPERTIES_NAME);
-            
-            if (propFile.exists()) {
-                properties.load(new FileInputStream(propFile));
-            }else{
-                InputStream propFileStream = Thread.currentThread().getContextClassLoader().getResourceAsStream(PROPERTIES_NAME);
-                if(propFileStream != null){
-                    properties.load(propFileStream);
-                }else{
-                    throw new SQLException("no properties for databaseconnection found: "
-                            + PROPERTIES_NAME);
-                }
-            }
+	/**
+	 * Getter for property
+	 * 
+	 * @return value of the property
+	 */
+	public String getPort() {
+		return port;
+	}
 
-            this.host = properties.getProperty("host");
-            this.database = properties.getProperty("database");
-            this.username = properties.getProperty("username");
-            this.password = properties.getProperty("password");
-            this.port = properties.getProperty("port");
-            this.embedded = "true".equalsIgnoreCase(properties.getProperty("embedded"));
+	/**
+	 * Getter for property
+	 * 
+	 * @return value of the property
+	 */
+	public String getUsername() {
+		return username;
+	}
 
-        } catch (FileNotFoundException e) {
+	/**
+	 * Getter for property
+	 * 
+	 * @return value of the property
+	 */
+	public int getPoolsizeBuffer() {
+		return poolsizeBuffer;
+	}
 
-            // Should be checked and never happen
-            throw new DBException(e);
-        } catch (IOException e) {
-            throw new SQLException("could not load properties for databaseconnection from: "
-                + PROPERTIES_NAME);
-        }
+	/**
+	 * Getter for property
+	 * 
+	 * @return value of the property
+	 */
+	public int getPoolsizeMax() {
+		return poolsizeMax;
+	}
 
-    }
+	/**
+	 * Getter for property
+	 * 
+	 * @return value of the property
+	 */
+	public int getPoolsizeMin() {
+		return poolsizeMin;
+	}
+
+	/**
+	 * reloads the properties from the file
+	 * 
+	 * @throws IOException
+	 *             if properties cant be load
+	 */
+	private void reload() throws IOException {
+
+		try {
+			Properties properties = new Properties();
+
+			File propFile = new File(PROPERTIES_NAME);
+
+			if (propFile.exists()) {
+				properties.load(new FileInputStream(propFile));
+			} else {
+				InputStream propFileStream = Thread.currentThread()
+						.getContextClassLoader()
+						.getResourceAsStream(PROPERTIES_NAME);
+				if (propFileStream != null) {
+					properties.load(propFileStream);
+				} else {
+					throw new IOException(
+							"no properties for databaseconnection found: "
+									+ PROPERTIES_NAME);
+				}
+			}
+
+			this.host = properties.getProperty("host");
+			this.database = properties.getProperty("database");
+			this.username = properties.getProperty("username");
+			this.password = properties.getProperty("password");
+			this.port = properties.getProperty("port");
+			this.embedded = "true".equalsIgnoreCase(properties
+					.getProperty("embedded"));
+
+			this.poolsizeMin = getPropertyInt(properties, "poolsize_min",
+					ConnectionFactory.DEFAULT_POOLSIZE_MIN);
+			this.poolsizeMax = getPropertyInt(properties, "poolsize_max",
+					ConnectionFactory.DEFAULT_POOLSIZE_MAX);
+			this.poolsizeBuffer = getPropertyInt(properties, "poolsize_buffer",
+					ConnectionFactory.DEFAULT_POOLSIZE_BUFFER);
+
+		} catch (IOException e) {
+			throw new IOException(
+					"could not load properties for databaseconnection from: "
+							+ PROPERTIES_NAME);
+		}
+
+	}
+
+	/**
+	 * fetches a value for a key from a properties object and returns it as int.
+	 * If no int is fetchable, detfaultValue is returned
+	 * 
+	 * @param properties
+	 *            the properties object
+	 * @param key
+	 *            the key to fetch
+	 * @param defaultValue
+	 *            the default value, if no int can be fetched
+	 * @return the fethed value or defaultValue if not set
+	 */
+	private int getPropertyInt(Properties properties, String key,
+			int defaultValue) {
+		String value = properties.getProperty(key);
+		if (value == null) {
+			return defaultValue;
+		}
+		try {
+			return Integer.parseInt(value);
+		} catch (NumberFormatException e) {
+			return defaultValue;
+		}
+	}
 }

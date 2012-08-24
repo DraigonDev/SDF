@@ -1,5 +1,6 @@
 package de.draigon.sdf.connection;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -16,13 +17,13 @@ import de.draigon.sdf.util.Loggin;
 public class ConnectionFactory {
 
 	/** default value for min poolsize */
-	public static int POOLSIZE_MIN = 1;
+	public static int DEFAULT_POOLSIZE_MIN = 1;
 
 	/** default value for max poolsize */
-	public static int POOLSIZE_MAX = 10;
+	public static int DEFAULT_POOLSIZE_MAX = 10;
 
 	/** default value for the poolsize buffer */
-	public static int POOLSIZE_BUFFER = 4;
+	public static int DEFAULT_POOLSIZE_BUFFER = 4;
 
 	/** default value, how long to wait for connecton to place a warning */
 	public static int WARN_TIME = 60;
@@ -38,6 +39,15 @@ public class ConnectionFactory {
 
 	/** indicates wheather a request for a connection is pending or not */
 	private static boolean waiting = false;
+
+	/** the minimal poolsize */
+	private static int poolsizeMin;
+	
+	/** the maximal poolsize */
+	private static int poolsizeMax;
+	
+	/** the poolsize buffer */
+	private static int poolsizeBuffer;
 
 	//TODO if all works, delete this rows
 	// @SuppressWarnings("unused")
@@ -59,7 +69,16 @@ public class ConnectionFactory {
 	 * Initiate the database pool.
 	 */
 	static {
+		try{
 		ConnectionFactory.embedded = ConnectionProperties.get().isEmbedded();
+		ConnectionFactory.poolsizeMin = ConnectionProperties.get().getPoolsizeMin();
+		ConnectionFactory.poolsizeMax = ConnectionProperties.get().getPoolsizeMax();
+		ConnectionFactory.poolsizeBuffer = ConnectionProperties.get().getPoolsizeBuffer();
+		
+		}catch (IOException e) {
+            throw new DBException("could not connect to database", e);
+		}
+		
 		if (ConnectionFactory.embedded) {
 			Loggin.logConnectionFactory("using embedded database (org.apache.derby)");
 		} else {
@@ -68,7 +87,7 @@ public class ConnectionFactory {
 
 		connections = new ArrayList<DBConnection>();
 
-		for (int i = 0; i < POOLSIZE_MIN; i++) {
+		for (int i = 0; i < poolsizeMin; i++) {
 			connections.add(buildConnection());
 		}
 
@@ -101,9 +120,9 @@ public class ConnectionFactory {
 	public static synchronized void notifyFreeConnection(DBConnection released) {
 		Loggin.logConnectionFactory(released + " released");
 
-		if (connections.size() > POOLSIZE_MIN) {
+		if (connections.size() > ConnectionFactory.poolsizeMin) {
 
-			while (getFreeConnectionCount() > POOLSIZE_BUFFER) {
+			while (getFreeConnectionCount() > ConnectionFactory.poolsizeBuffer) {
 				DBConnection connection = getFreeConnection();
 				connection.kill();
 				connections.remove(connection);
@@ -165,7 +184,7 @@ public class ConnectionFactory {
 				return conn;
 			}
 
-			if (connections.size() < POOLSIZE_MAX) {
+			if (connections.size() < ConnectionFactory.poolsizeMax) {
 				conn = buildConnection();
 				connections.add(conn);
 				conn.setInUse();
