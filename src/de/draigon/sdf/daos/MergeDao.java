@@ -253,13 +253,14 @@ public class MergeDao<T> {
      */
     private Object update(DatabaseUpdater updater, Object object, MergeMapping mapping)
         throws UpdateException {
-        Inserts query = new Inserts();
+        
+    	if (object == null) {
+             throw new NullPointerException("object to insert mustn't be null");
+        }
+    	 
+    	Inserts query = new Inserts();
         Class<?> clazz = object.getClass();
         String tableName = DaoUtils.getTableName(clazz);
-
-        if (object == null) {
-            throw new NullPointerException("object to insert mustn't be null");
-        }
 
 
         for (ExtendedField field : DaoUtils.getAllFieldsWithSuperclasses(clazz)) {
