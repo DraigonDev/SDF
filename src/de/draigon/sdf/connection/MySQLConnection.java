@@ -11,38 +11,30 @@ import de.draigon.sdf.exception.DBException;
 
 
 /**
- * FIXME: Javadoc einfuegen
+ * implementation of {@link DBConnection} using com.mysql.jdbc on mysql
  *
- * @author
+ * @author Draigon Development
+ * @version 1.0
  */
-public class MySQLConnection implements DBConnection {
+public class MySQLConnection extends DBConnection {
 
     private static String SQL_DRIVER_NAME = "com.mysql.jdbc.Driver";
     private static String SQL_DRIVER_URL = "jdbc:mysql://{HOST}:{PORT}/{DB}";
 
-    /** FIXME: Javadoc einfuegen */
+    /** the connection */
     Connection connection;
 
-    private boolean use = false;
-
     /**
-     * FIXME: Javadoc kontrollieren Erstellt eine neue Instanz von Connection.
+     * creates a new instance
      */
     public MySQLConnection() {
         this.createConnection();
     }
 
-    /* (non-Javadoc)
-     * @see de.draigon.sdf.connection.DBConnection#close()
+    /**
+     * {@inheritDoc}
      */
-    public synchronized void close() {
-        this.use = false;
-        ConnectionFactory.notifyFreeConnection(this);
-    }
-
-    /* (non-Javadoc)
-     * @see de.draigon.sdf.connection.DBConnection#commitTransaction()
-     */
+    @Override
     public void commitTransaction() throws SQLException {
 
         try {
@@ -65,9 +57,10 @@ public class MySQLConnection implements DBConnection {
         }
     }
 
-    /* (non-Javadoc)
-     * @see de.draigon.sdf.connection.DBConnection#getStatement()
+    /**
+     * {@inheritDoc}
      */
+    @Override
     public Statement getStatement() {
 
         if (connection == null) {
@@ -82,9 +75,10 @@ public class MySQLConnection implements DBConnection {
 
     }
 
-    /* (non-Javadoc)
-     * @see de.draigon.sdf.connection.DBConnection#kill()
+    /**
+     * {@inheritDoc}
      */
+    @Override
     public void kill() {
 
         try {
@@ -94,9 +88,10 @@ public class MySQLConnection implements DBConnection {
         }
     }
 
-    /* (non-Javadoc)
-     * @see de.draigon.sdf.connection.DBConnection#rollback()
+    /**
+     * {@inheritDoc}
      */
+    @Override
     public void rollback() {
 
         try {
@@ -106,16 +101,10 @@ public class MySQLConnection implements DBConnection {
         }
     }
 
-    /* (non-Javadoc)
-     * @see de.draigon.sdf.connection.DBConnection#setInUse()
+    /**
+     * {@inheritDoc}
      */
-    public void setInUse() {
-        this.use = true;
-    }
-
-    /* (non-Javadoc)
-     * @see de.draigon.sdf.connection.DBConnection#startTransaction()
-     */
+    @Override
     public void startTransaction() {
 
         try {
@@ -125,6 +114,9 @@ public class MySQLConnection implements DBConnection {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String toString() {
         return "Connection{" + super.toString()
@@ -132,14 +124,9 @@ public class MySQLConnection implements DBConnection {
     }
 
     /**
-     * FIXME: Javadoc kontrollieren Liefert den Wert von in use
-     *
-     * @return  Der Wert von in use
+     * {@inheritDoc}
      */
-    public synchronized boolean isInUse() {
-        return this.use;
-    }
-
+    @Override
     public DatabaseMetaData getMetaData(){
         if (connection == null) {
             throw new DBException("database connection lost.");
@@ -153,6 +140,9 @@ public class MySQLConnection implements DBConnection {
         
     }
     
+    /**
+     * creates a new connection of com.mysql.jdbc
+     */
     private void createConnection() {
 
         try {

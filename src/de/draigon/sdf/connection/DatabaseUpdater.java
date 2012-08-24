@@ -8,17 +8,19 @@ import de.draigon.sdf.util.Loggin;
 
 
 /**
- * FIXME: Javadoc einfuegen
- *
- * @author
+ * Manages the acess for updates/inserts/deletes to database.
+ * 
+ * @author Draigon Development
+ * @version 1.0
  */
 public class DatabaseUpdater {
 
-    /** FIXME: Javadoc einfuegen */
-    DBConnection connection;
+    /** The connection for executions */
+    private DBConnection connection;
 
     /**
-     * FIXME: Javadoc kontrollieren Erstellt eine neue Instanz von DatabaseUpdater.
+     * creates a new databaseUpdater and requests a connection from the {@link ConnectionFactory}.
+     * Note that till commiting the Updater this connection will be blocked.
      */
     public DatabaseUpdater() {
         connection = ConnectionFactory.getConnection();
@@ -26,7 +28,7 @@ public class DatabaseUpdater {
     }
 
     /**
-     * FIXME: Javadoc einfuegen
+     * Committes the updates and clears the connection
      *
      * @throws  SQLException
      */
@@ -38,18 +40,22 @@ public class DatabaseUpdater {
             throw e;
         } finally {
             connection.close();
+            connection = null;
         }
     }
 
     /**
-     * FIXME: Javadoc einfuegen
+     * Executes a query on the DB-Connection and returns the result.
      *
-     * @param   query
-     *
-     * @return
+     * @param   query the query to execute
+     * 
+     * @return true if the update was sucessful, false if an error occured.
      */
     public boolean execute(String query) {
         Loggin.logQuery(connection, query);
+        if(connection == null){
+        	throw new DBException("updater is only usable for one transaction. after committing create a new updater.");
+        }
 
         try {
             Statement statement = connection.getStatement();
@@ -64,10 +70,11 @@ public class DatabaseUpdater {
     }
 
     /**
-     * FIXME: Javadoc einfuegen
+     * rolls back all executions done on this updater and clears the connection.
      */
     public void rollback() {
         connection.rollback();
         connection.close();
+        connection = null;
     }
 }

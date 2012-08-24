@@ -12,39 +12,34 @@ import de.draigon.sdf.util.Loggin;
 
 
 /**
- * FIXME: Javadoc einfuegen
+ * implementation of {@link DBConnection} using org.apache.derby
  *
- * @author
+ * @author Draigon Development
+ * @version 1.0
  */
-public class EmbeddedConnection implements DBConnection {
+public class EmbeddedConnection extends DBConnection {
 
     private static final String SHUTDOWN_URL = "jdbc:derby:;shutdown=true";
     private static final String DRIVER_NAME = "org.apache.derby.jdbc.EmbeddedDriver";
     private static final String DRIVER_URL = "jdbc:derby:{DB};create=true";
 
-    /** FIXME: Javadoc einfuegen */
+    /** the connection */
     Connection connection;
 
-    private boolean use = false;
 
     /**
-     * FIXME: Javadoc kontrollieren Erstellt eine neue Instanz von Connection.
+     * creates a new instance.
      */
     public EmbeddedConnection() {
         this.createConnection();
     }
 
-    /* (non-Javadoc)
-     * @see de.draigon.sdf.connection.DBConnection#close()
-     */
-    public synchronized void close() {
-        this.use = false;
-        ConnectionFactory.notifyFreeConnection(this);
-    }
+ 
 
-    /* (non-Javadoc)
-     * @see de.draigon.sdf.connection.DBConnection#commitTransaction()
+    /**
+     * {@inheritDoc}
      */
+    @Override
     public void commitTransaction() throws SQLException {
 
         try {
@@ -67,9 +62,10 @@ public class EmbeddedConnection implements DBConnection {
         }
     }
 
-    /* (non-Javadoc)
-     * @see de.draigon.sdf.connection.DBConnection#getStatement()
+    /**
+     * {@inheritDoc}
      */
+    @Override
     public Statement getStatement() {
         
         if (connection == null) {
@@ -84,6 +80,10 @@ public class EmbeddedConnection implements DBConnection {
 
     }
     
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public DatabaseMetaData getMetaData(){
         if (connection == null) {
             throw new DBException("database connection lost.");
@@ -97,9 +97,10 @@ public class EmbeddedConnection implements DBConnection {
         
     }
 
-    /* (non-Javadoc)
-     * @see de.draigon.sdf.connection.DBConnection#kill()
+    /**
+     * {@inheritDoc}
      */
+    @Override
     public void kill() {
 
         try {
@@ -109,9 +110,10 @@ public class EmbeddedConnection implements DBConnection {
         }
     }
 
-    /* (non-Javadoc)
-     * @see de.draigon.sdf.connection.DBConnection#rollback()
+    /**
+     * {@inheritDoc}
      */
+    @Override
     public void rollback() {
 
         try {
@@ -121,16 +123,10 @@ public class EmbeddedConnection implements DBConnection {
         }
     }
 
-    /* (non-Javadoc)
-     * @see de.draigon.sdf.connection.DBConnection#setInUse()
+    /**
+     * {@inheritDoc}
      */
-    public void setInUse() {
-        this.use = true;
-    }
-
-    /* (non-Javadoc)
-     * @see de.draigon.sdf.connection.DBConnection#startTransaction()
-     */
+    @Override
     public void startTransaction() {
 
         try {
@@ -140,6 +136,9 @@ public class EmbeddedConnection implements DBConnection {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String toString() {
         return "Connection{" + super.toString()
@@ -147,14 +146,8 @@ public class EmbeddedConnection implements DBConnection {
     }
 
     /**
-     * FIXME: Javadoc kontrollieren Liefert den Wert von in use
-     *
-     * @return  Der Wert von in use
+     * creates a new connection of org.apache.derby
      */
-    public synchronized boolean isInUse() {
-        return this.use;
-    }
-
     private void createConnection() {
 
         try {
@@ -176,6 +169,9 @@ public class EmbeddedConnection implements DBConnection {
 		}
     }
 
+    /**
+     * shuts down org.apache.derby
+     */
     public static void shutdown() {
         boolean gotSQLExc = false;
         try {
