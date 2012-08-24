@@ -1,5 +1,6 @@
 package de.draigon.sdf.connection;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
@@ -168,9 +169,11 @@ public class EmbeddedConnection implements DBConnection {
             connection = DriverManager.getConnection(url);
         } catch (ClassNotFoundException e) {
             throw new DBException("could not connect to database", e);
+        } catch (IOException e) {
+            throw new DBException("could not connect to database", e);
         } catch (SQLException e) {
             throw new DBException("could not connect to database", e);
-        }
+		}
     }
 
     public static void shutdown() {
