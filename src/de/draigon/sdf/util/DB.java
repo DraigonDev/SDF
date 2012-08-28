@@ -25,7 +25,7 @@ public class DB {
 	 */
 	static {
 		try {
-			if (ConnectionProperties.get().isEmbedded()) {
+			if (new ConnectionProperties().isEmbedded()) {
 				DB.ESCAPE = "";
 			} else {
 				DB.ESCAPE = "`";
