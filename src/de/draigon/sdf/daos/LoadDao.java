@@ -178,7 +178,7 @@ public class LoadDao<T> {
 
         Object instance = this.resultToObject(result, mappingField.getMappedClass());
 
-        System.out.println("Referencing: " + instance.getClass() + " to " + this.getUUIDBelongsTo(result, mappingField));
+        //DEBUG System.out.println("Referencing: " + instance.getClass() + " to " + this.getUUIDBelongsTo(result, mappingField));
         
         dataFromDB.addMappedObject(instance, mappingField,
             this.getUUIDBelongsTo(result, mappingField));
