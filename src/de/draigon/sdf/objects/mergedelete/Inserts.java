@@ -1,19 +1,20 @@
 package de.draigon.sdf.objects.mergedelete;
 
 /**
- * FIXME: Javadoc einfuegen
+ * List of Insert-Strings. (Decorator for java.uti.list)
  *
- * @author
+ * @author Draigon Development
+ * @version 1.0
  */
 public class Inserts {
 
-    /** FIXME: Javadoc einfuegen */
+    /** The List */
     String list = "";
 
     /**
-     * FIXME: Javadoc einfuegen
+     * Adds a insert to the list
      *
-     * @param  object
+     * @param  the insert to add
      */
     public void add(String object) {
 
@@ -25,18 +26,18 @@ public class Inserts {
     }
 
     /**
-     * FIXME: Javadoc kontrollieren Liefert den Wert von list
+     * returns the list of inserts
      *
-     * @return  Der Wert von list
+     * @return  the inserts
      */
     public String getList() {
         return list;
     }
 
     /**
-     * FIXME: Javadoc kontrollieren Liefert den Wert von empty
+     * getter if the list is empty
      *
-     * @return  Der Wert von empty
+     * @return  true if list is empty
      */
     public boolean isEmpty() {
         return this.list.isEmpty();

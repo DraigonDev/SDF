@@ -1,32 +1,34 @@
 package de.draigon.sdf.objects.mergedelete;
 
+import de.draigon.sdf.annotation.ManyToMany;
 import de.draigon.sdf.daos.util.DaoUtils;
 import de.draigon.sdf.objects.ExtendedField;
 import de.draigon.sdf.objects.MappingType;
 
 
 /**
- * FIXME: Javadoc einfuegen
+ * Mappinginformtions for {@link ManyToMany} mapping-realation
  *
- * @author
+ * @author Draigon Development
+ * @version 1.0
  */
 public class MergeMapping {
 
-    /** FIXME: Javadoc einfuegen */
+    /** object that maps */
     Object objectFrom;
 
-    /** FIXME: Javadoc einfuegen */
+    /** object that is mapped */
     Object objectTo;
     private MappingType mappingType;
 
+    /** tablename where relation is stored (in n/m = defined name, in mTO1 = table that is mapped)*/
     private String mappingTable;
 
     /**
      * FIXME: Javadoc kontrollieren Erstellt eine neue Instanz von MergeMapping.
      *
-     * @param  objectFrom
-     * @param  objectTo
-     * @param  type
+     * @param  objectFrom object that maps
+     * @param  field field that mapped the other class
      */
     public MergeMapping(Object objectFrom, ExtendedField field) {
         this.mappingType = field.getEntityMapping();
