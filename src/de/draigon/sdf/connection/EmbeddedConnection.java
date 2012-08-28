@@ -151,7 +151,7 @@ public class EmbeddedConnection extends DBConnection {
     private void createConnection() {
 
         try {
-            ConnectionProperties properties = ConnectionProperties.get();
+            ConnectionProperties properties = new ConnectionProperties();
 
             Class.forName(DRIVER_NAME);
 

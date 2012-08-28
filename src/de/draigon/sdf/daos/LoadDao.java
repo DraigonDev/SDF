@@ -1,9 +1,7 @@
 package de.draigon.sdf.daos;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -15,6 +13,7 @@ import de.draigon.sdf.exception.DBException;
 import de.draigon.sdf.objects.ExtendedField;
 import de.draigon.sdf.objects.load.DBObjectMap;
 import de.draigon.sdf.objects.load.MappingField;
+import de.draigon.sdf.objects.load.ResultSetWrapper;
 import de.draigon.sdf.objects.load.QueryInfos;
 import de.draigon.sdf.objects.load.RestrictionBuilder;
 import de.draigon.sdf.util.EnumUtils;
@@ -53,7 +52,7 @@ public class LoadDao<T> {
      *
      * @return  Der Wert von UUIDBelongs to
      */
-    private String getUUIDBelongsTo(ResultSet resultSet, MappingField mappedfield) {
+    private String getUUIDBelongsTo(ResultSetWrapper resultSet, MappingField mappedfield) {
 
         try {
             return resultSet.getString(mappedfield.getResultFullQualifiedNameReferences());
@@ -103,7 +102,8 @@ public class LoadDao<T> {
 
             Loggin.logQuery(connection, query);
 
-            ResultSet resultset = statement.executeQuery(query);
+            ResultSetWrapper resultset = new ResultSetWrapper(statement.executeQuery(query));
+            
 
             List<T> results = this.resultsToList(resultset, infos);
             resultset.close();
@@ -121,7 +121,7 @@ public class LoadDao<T> {
     }
 
     @SuppressWarnings("unchecked")
-    private List<T> resultsToList(ResultSet resultSet, QueryInfos infos) throws SQLException {
+    private List<T> resultsToList(ResultSetWrapper resultSet, QueryInfos infos) throws SQLException {
         DBObjectMap dataFromDB = new DBObjectMap();
 
         while (resultSet.next()) {
@@ -145,7 +145,7 @@ public class LoadDao<T> {
      *
      * @param  result
      */
-    private Object resultToObject(ResultSet result, Class<?> clazz) {
+    private Object resultToObject(ResultSetWrapper result, Class<?> clazz) {
         Object instance = instantiate(clazz);
 
         for (ExtendedField field : DaoUtils.getAllFieldsWithSuperclasses(clazz)) {
@@ -172,7 +172,7 @@ public class LoadDao<T> {
      *
      * @param  result
      */
-    private void resultToObject(ResultSet result, MappingField mappingField,
+    private void resultToObject(ResultSetWrapper result, MappingField mappingField,
         DBObjectMap dataFromDB) {
 
 
@@ -184,7 +184,7 @@ public class LoadDao<T> {
             this.getUUIDBelongsTo(result, mappingField));
     }
 
-    private void resultToObjects(DBObjectMap dataFromDB, ResultSet resultSet, QueryInfos infos) {
+    private void resultToObjects(DBObjectMap dataFromDB, ResultSetWrapper resultSet, QueryInfos infos) {
 
         // Mainclass
         dataFromDB.addMainObject(this.resultToObject(resultSet, infos.getMainClass()));
@@ -195,9 +195,9 @@ public class LoadDao<T> {
         }
     }
 
-    private void setValue(Object instance, ResultSet result, ExtendedField field)
+    private void setValue(Object instance, ResultSetWrapper result, ExtendedField field)
         throws SQLException {
-
+    	
         try {
             Class<?> clazzOfField = field.getType();
 
@@ -214,7 +214,7 @@ public class LoadDao<T> {
             }
 
             if (Integer.class.equals(clazzOfField)) {
-                field.setValue(instance, result.getInt(field.getResultFullQualifiedName()));
+                field.setValue(instance, result.getInteger(field.getResultFullQualifiedName()));
 
                 return;
             }
@@ -247,7 +247,7 @@ public class LoadDao<T> {
             if (clazzOfField.isEnum()) {
                 field.setValue(instance,
                     EnumUtils.fromId(clazzOfField,
-                        result.getInt(field.getResultFullQualifiedName())));
+                        result.getInteger(field.getResultFullQualifiedName())));
             }
         } catch (IllegalArgumentException e) {
             throw new DBException("unable to add value from column '"

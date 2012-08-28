@@ -15,295 +15,312 @@ import de.draigon.sdf.objects.mergedelete.MergeMapping;
 import de.draigon.sdf.util.DB;
 import de.draigon.sdf.util.EnumUtils;
 
-
 /**
  * FIXME: Javadoc einfuegen
- *
+ * 
  * @author
  */
 public class MergeDao<T> {
 
-    /**
-     * FIXME: Javadoc einfuegen
-     *
-     * @param   object
-     *
-     * @return
-     *
-     * @throws  UpdateException
-     */
-    @SuppressWarnings("unchecked")
-    public T perform(T object) throws UpdateException {
-        DatabaseUpdater updater = new DatabaseUpdater();
+	/**
+	 * FIXME: Javadoc einfuegen
+	 * 
+	 * @param object
+	 * 
+	 * @return
+	 * 
+	 * @throws UpdateException
+	 */
+	@SuppressWarnings("unchecked")
+	public T perform(T object) throws UpdateException {
+		DatabaseUpdater updater = new DatabaseUpdater();
 
-        try {
-            object = (T) this.merge(updater, object, null);
-        } catch (DBException e) {
-            updater.rollback();
-            throw new DBException("update rolled back", e);
-        } catch (UpdateException e) {
-            updater.rollback();
-            throw new UpdateException("update is rolled back", e);
-        }
+		try {
+			object = (T) this.merge(updater, object, null);
+		} catch (DBException e) {
+			updater.rollback();
+			throw new DBException("update rolled back", e);
+		} catch (UpdateException e) {
+			updater.rollback();
+			throw new UpdateException("update is rolled back", e);
+		}
 
-        try {
-            updater.commit();
-        } catch (SQLException e) {
-            throw new DBException("could not merge object + " + object, e);
-        }
+		try {
+			updater.commit();
+		} catch (SQLException e) {
+			throw new DBException("could not merge object + " + object, e);
+		}
 
-        return object;
-    }
+		return object;
+	}
 
-    private void clearReferences(DatabaseUpdater updater, MergeMapping mapping)
-        throws UpdateException {
+	private void clearReferences(DatabaseUpdater updater, MergeMapping mapping)
+			throws UpdateException {
 
-        if (mapping.isManyToMany()) {
-            String query = "DELETE FROM "+DB.ESCAPE+"" + mapping.getMappingTable() + ""+DB.ESCAPE+" WHERE "+DB.ESCAPE+""
-                + mapping.getColumnFrom() + ""+DB.ESCAPE+" = '" + mapping.getValueFrom() + "'";
+		if (mapping.isManyToMany()) {
+			String query = "DELETE FROM " + DB.ESCAPE + ""
+					+ mapping.getMappingTable() + "" + DB.ESCAPE + " WHERE "
+					+ DB.ESCAPE + "" + mapping.getColumnFrom() + "" + DB.ESCAPE
+					+ " = '" + mapping.getValueFrom() + "'";
 
-            if (!updater.execute(query)) {
-                throw new UpdateException("unable to insert relation to mappingtable");
-            }
-        } else if (mapping.isManyToOne()) {
-            String query = "UPDATE "+DB.ESCAPE+"" + mapping.getMappingTable() + ""+DB.ESCAPE+" SET "+DB.ESCAPE+""
-                + mapping.getColumnFrom() + ""+DB.ESCAPE+" = 'NULL' WHERE "+DB.ESCAPE+"" + mapping.getColumnFrom() + ""+DB.ESCAPE+" = '"
-                + mapping.getValueFrom() + "'";
+			if (!updater.execute(query)) {
+				throw new UpdateException(
+						"unable to insert relation to mappingtable");
+			}
+		} else if (mapping.isManyToOne()) {
+			String query = "UPDATE " + DB.ESCAPE + ""
+					+ mapping.getMappingTable() + "" + DB.ESCAPE + " SET "
+					+ DB.ESCAPE + "" + mapping.getColumnFrom() + "" + DB.ESCAPE
+					+ " = 'NULL' WHERE " + DB.ESCAPE + ""
+					+ mapping.getColumnFrom() + "" + DB.ESCAPE + " = '"
+					+ mapping.getValueFrom() + "'";
 
-            if (!updater.execute(query)) {
-                throw new UpdateException("unable to insert relation to mappingtable");
-            }
-        }
-    }
+			if (!updater.execute(query)) {
+				throw new UpdateException(
+						"unable to insert relation to mappingtable");
+			}
+		}
+	}
 
-    private String getInsertValue(Object value) {
+	private String getInsertValue(Object value) {
 
-        if (value == null) {
-            return null;
-        }
+		if (value == null) {
+			return null;
+		}
 
-        if (value instanceof Date) {
-            return "'" + DaoUtils.DATE_FORMATTER.format(value)
-                + "'";
-        } else if (value.getClass().isEnum()) {
-            return "" + EnumUtils.getId(value) + "";
-        } else if (value instanceof String) {
-            value = value.toString()
-            .replaceAll("'", "''");
+		if (value instanceof Date) {
+			return "'" + DaoUtils.DATE_FORMATTER.format(value) + "'";
+		} else if (value.getClass().isEnum()) {
+			return "" + EnumUtils.getId(value) + "";
+		} else if (value instanceof String) {
+			value = value.toString().replaceAll("'", "''");
 
-        return "'" + value + "'";
-        }else {
-            //All types of Numbers
-            return "" + value.toString() + "";
-        }
-    }
+			return "'" + value + "'";
+		} else {
+			// All types of Numbers
+			return "" + value.toString() + "";
+		}
+	}
 
-    private String getUpdateSetClause(String dbColumnName, Object value) {
+	private String getUpdateSetClause(String dbColumnName, Object value) {
 
-        if (value instanceof Date) {
-            return dbColumnName + "='" + DaoUtils.DATE_FORMATTER.format(value)
-                + "'";
-        } else if (value.getClass().isEnum()) {
-            return dbColumnName + "='" + EnumUtils.getId(value) + "'";
-        }else if (value instanceof String) {
-            value = value.toString()
-            .replaceAll("'", "''");
+		if (value instanceof Date) {
+			return dbColumnName + "='" + DaoUtils.DATE_FORMATTER.format(value)
+					+ "'";
+		} else if (value.getClass().isEnum()) {
+			return dbColumnName + "='" + EnumUtils.getId(value) + "'";
+		} else if (value instanceof String) {
+			value = value.toString().replaceAll("'", "''");
 
-            return dbColumnName + "='" + value + "'";
-        }else {
-            //All types of Numbers
-            return dbColumnName + "=" + value.toString() + "";
-        }
-    }
+			return dbColumnName + "='" + value + "'";
+		} else {
+			// All types of Numbers
+			return dbColumnName + "=" + value.toString() + "";
+		}
+	}
 
-    /**
-     * FIXME: Javadoc einfuegen
-     *
-     * @param   object
-     * @param   object2
-     * @param   mapping
-     *
-     * @return
-     *
-     * @throws  UpdateException
-     */
-    private Object insert(DatabaseUpdater updater, Object object, MergeMapping mapping)
-        throws UpdateException {
+	/**
+	 * FIXME: Javadoc einfuegen
+	 * 
+	 * @param object
+	 * @param object2
+	 * @param mapping
+	 * 
+	 * @return
+	 * 
+	 * @throws UpdateException
+	 */
+	private Object insert(DatabaseUpdater updater, Object object,
+			MergeMapping mapping) throws UpdateException {
 
-        if (object == null) {
-            throw new NullPointerException("object to insert mustn't be null");
-        }
+		if (object == null) {
+			throw new NullPointerException("object to insert mustn't be null");
+		}
 
-        Inserts columns = new Inserts();
-        Inserts values = new Inserts();
+		Inserts columns = new Inserts();
+		Inserts values = new Inserts();
 
-        Class<?> clazz = object.getClass();
-        String tableName = DaoUtils.getTableName(clazz);
+		Class<?> clazz = object.getClass();
+		String tableName = DaoUtils.getTableName(clazz);
 
-        if (mapping != null && mapping.isOneToOne()) {
-            DaoUtils.setUuid(object, mapping.getValueFrom());
-        } else {
-            DaoUtils.generateUuid(object);
-        }
+		if (mapping != null && mapping.isOneToOne()) {
+			DaoUtils.setUuid(object, mapping.getValueFrom());
+		} else {
+			DaoUtils.generateUuid(object);
+		}
 
-        for (ExtendedField field : DaoUtils.getAllFieldsWithSuperclasses(clazz)) {
+		for (ExtendedField field : DaoUtils.getAllFieldsWithSuperclasses(clazz)) {
 
-            if (field.hasDBMapping()) {
-                Object value = field.getValue(object);
+			if (field.hasDBMapping()) {
+				Object value = field.getValue(object);
 
-                // add insertPair
-                columns.add(field.getDBColumnName());
-                values.add(getInsertValue(value));
-            }
-            
-            if (field.hasEntityMapping() && MappingType.ONE_TO_MANY.equals(field.getEntityMapping())) {
-                Object subObject = field.getValue(object);
-                
-                MergeMapping nextMapping = new MergeMapping(object, field);
-                nextMapping.setObjectTo(subObject);
-                
-                subObject = merge(updater, subObject, nextMapping);
-                field.setValue(object, subObject); //should not e nessesary            
-                
-                //now get the UUID for the insert
-                Object value = DaoUtils.getUuid(subObject);
+				// add insertPair
+				columns.add(field.getDBColumnName());
+				values.add(getInsertValue(value));
+			}
 
-                // add insertPair
-                columns.add(DaoUtils.getTableName(field.getType()) + "_UUID");
-                values.add(getInsertValue(value));
-            }
-        }
+			if (field.hasEntityMapping()
+					&& MappingType.ONE_TO_MANY.equals(field.getEntityMapping())) {
+				Object subObject = field.getValue(object);
 
-        if (mapping != null && mapping.isManyToOne()) {
-            columns.add(""+DB.ESCAPE+"" + mapping.getColumnFrom() + ""+DB.ESCAPE+"");
-            values.add("'" + mapping.getValueFrom() + "'");
-        }
+				MergeMapping nextMapping = new MergeMapping(object, field);
+				nextMapping.setObjectTo(subObject);
 
-        if (!columns.isEmpty()) {
-            String update = "INSERT INTO "+DB.ESCAPE+"" + tableName + ""+DB.ESCAPE+" ( " + columns.getList()
-                + " ) VALUES ( " + values.getList()
-                + " )";
+				subObject = merge(updater, subObject, nextMapping);
+				field.setValue(object, subObject); // should not e nessesary
 
-            if (!updater.execute(update)) {
-                throw new UpdateException("could not insert entity " + object);
-            }
-        }
+				// now get the UUID for the insert
+				Object value = DaoUtils.getUuid(subObject);
 
+				// add insertPair
+				columns.add(DaoUtils.getTableName(field.getType()) + "_UUID");
+				values.add(getInsertValue(value));
+			}
+		}
 
-        return object;
-    }
+		if (mapping != null && mapping.isManyToOne()) {
+			columns.add("" + DB.ESCAPE + "" + mapping.getColumnFrom() + ""
+					+ DB.ESCAPE + "");
+			values.add("'" + mapping.getValueFrom() + "'");
+		}
 
-    @SuppressWarnings("unchecked")
-    private Object merge(DatabaseUpdater updater, Object object, MergeMapping mapping)
-        throws UpdateException {
-        String uuid = DaoUtils.getUuid(object);
+		if (!columns.isEmpty()) {
+			String update = "INSERT INTO " + DB.ESCAPE + "" + tableName + ""
+					+ DB.ESCAPE + " ( " + columns.getList() + " ) VALUES ( "
+					+ values.getList() + " )";
 
-        if (uuid == null) {
-            object = this.insert(updater, object, mapping);
+			if (!updater.execute(update)) {
+				throw new UpdateException("could not insert entity " + object);
+			}
+		}
 
-        } else {
-            object = this.update(updater, object, mapping);
+		return object;
+	}
 
-        }
+	@SuppressWarnings("unchecked")
+	private Object merge(DatabaseUpdater updater, Object object,
+			MergeMapping mapping) throws UpdateException {
+		String uuid = DaoUtils.getUuid(object);
 
-        if (mapping != null && mapping.isManyToMany()) {
-            String query = "INSERT INTO "+DB.ESCAPE+"" + mapping.getMappingTable() + ""+DB.ESCAPE+" ("+DB.ESCAPE+""
-                + mapping.getColumnFrom() + ""+DB.ESCAPE+", "+DB.ESCAPE+"" + mapping.getColumnTo() + ""+DB.ESCAPE+") VALUES ('"
-                + mapping.getValueFrom() + "','" + mapping.getValueTo() + "')";
+		if (uuid == null) {
+			object = this.insert(updater, object, mapping);
 
-            if (!updater.execute(query)) {
-                throw new UpdateException("unable to insert relation to mappingtable");
-            }
-        }
+		} else {
+			object = this.update(updater, object, mapping);
 
-        for (ExtendedField field : DaoUtils.getAllMappingsWithSuperclasses(object.getClass())) {
+		}
 
-            if (field.isCascadingMerge()) {
-                MergeMapping nextMapping = new MergeMapping(object, field);
+		if (mapping != null && mapping.isManyToMany()) {
+			String query = "INSERT INTO " + DB.ESCAPE + ""
+					+ mapping.getMappingTable() + "" + DB.ESCAPE + " ("
+					+ DB.ESCAPE + "" + mapping.getColumnFrom() + "" + DB.ESCAPE
+					+ ", " + DB.ESCAPE + "" + mapping.getColumnTo() + ""
+					+ DB.ESCAPE + ") VALUES ('" + mapping.getValueFrom()
+					+ "','" + mapping.getValueTo() + "')";
 
-                if (nextMapping.isManyToMany() || nextMapping.isManyToOne()) {
-                    clearReferences(updater, nextMapping);
+			if (!updater.execute(query)) {
+				throw new UpdateException(
+						"unable to insert relation to mappingtable");
+			}
+		}
 
-                    for (Object subObject : (List<Object>) field.getValue(object)) {
-                        nextMapping.setObjectTo(subObject);
-                        merge(updater, subObject, nextMapping);
-                    }
-                } else if(nextMapping.isOneToOne()){
-                    Object subObject = field.getValue(object);
-                    nextMapping.setObjectTo(subObject);
-                    merge(updater, subObject, nextMapping);
-                }
-                //OneToMany des nothing. this merge will be performed in update/insert, becasue it needs ti be in db before mainobject
-            }
-        }
+		for (ExtendedField field : DaoUtils
+				.getAllMappingsWithSuperclasses(object.getClass())) {
 
-        return object;
-    }
+			if (field.isCascadingMerge()) {
+				MergeMapping nextMapping = new MergeMapping(object, field);
 
-    /**
-     * FIXME: Javadoc einfuegen
-     *
-     * @param   object
-     * @param   mapping
-     * @param   object2
-     *
-     * @return
-     *
-     * @throws  UpdateException
-     */
-    private Object update(DatabaseUpdater updater, Object object, MergeMapping mapping)
-        throws UpdateException {
-        
-    	if (object == null) {
-             throw new NullPointerException("object to insert mustn't be null");
-        }
-    	 
-    	Inserts query = new Inserts();
-        Class<?> clazz = object.getClass();
-        String tableName = DaoUtils.getTableName(clazz);
+				if (nextMapping.isManyToMany() || nextMapping.isManyToOne()) {
+					clearReferences(updater, nextMapping);
 
+					List<Object> values = (List<Object>) field.getValue(object);
+					if (values != null) { //if null, then ignore it - no list set then, so nothing to insert
+						for (Object subObject : values) {
+							nextMapping.setObjectTo(subObject);
+							merge(updater, subObject, nextMapping);
+						}
+					}
+				} else if (nextMapping.isOneToOne()) {
+					Object subObject = field.getValue(object);
+					nextMapping.setObjectTo(subObject);
+					merge(updater, subObject, nextMapping);
+				}
+				// OneToMany des nothing. this merge will be performed in
+				// update/insert, becasue it needs ti be in db before mainobject
+			}
+		}
 
-        for (ExtendedField field : DaoUtils.getAllFieldsWithSuperclasses(clazz)) {
+		return object;
+	}
 
-            if (field.hasDBMapping()) {
-                Object value = field.getValue(object);
+	/**
+	 * FIXME: Javadoc einfuegen
+	 * 
+	 * @param object
+	 * @param mapping
+	 * @param object2
+	 * 
+	 * @return
+	 * 
+	 * @throws UpdateException
+	 */
+	private Object update(DatabaseUpdater updater, Object object,
+			MergeMapping mapping) throws UpdateException {
 
-                query.add(getUpdateSetClause(field.getDBColumnName(), value));
-            }
-            
-            if (field.hasEntityMapping() && MappingType.ONE_TO_MANY.equals(field.getEntityMapping())) {
-                Object subObject = field.getValue(object);
-                
-                MergeMapping nextMapping = new MergeMapping(object, field);
-                nextMapping.setObjectTo(subObject);
-                
-                subObject = merge(updater, subObject, nextMapping);
-                field.setValue(object, subObject); //should not e nessesary            
-                
-                //now get the UUID for the insert
-                Object value = DaoUtils.getUuid(subObject);
+		if (object == null) {
+			throw new NullPointerException("object to insert mustn't be null");
+		}
 
-                // add insertPair
-                query.add(getUpdateSetClause(DaoUtils.getTableName(field.getType()) + "_UUID", value));
-            }
-        }
+		Inserts query = new Inserts();
+		Class<?> clazz = object.getClass();
+		String tableName = DaoUtils.getTableName(clazz);
 
-        if (mapping != null && mapping.isManyToOne()) {
-            query.add(getUpdateSetClause(""+DB.ESCAPE+"" + mapping.getColumnFrom() + ""+DB.ESCAPE+"",
-                    mapping.getValueFrom()));
-        }
+		for (ExtendedField field : DaoUtils.getAllFieldsWithSuperclasses(clazz)) {
 
-        if (!query.isEmpty()) {
-            String update = "UPDATE "+DB.ESCAPE+"" + tableName + ""+DB.ESCAPE+" SET " + query.getList() + " WHERE "+DB.ESCAPE+""
-                + tableName
-                + ""+DB.ESCAPE+"."+DB.ESCAPE+"UUID"+DB.ESCAPE+" = '" + DaoUtils.getUuid(object) + "'";
+			if (field.hasDBMapping()) {
+				Object value = field.getValue(object);
 
-            if (!updater.execute(update)) {
-                throw new UpdateException("no entry found in database for object: " + object);
-            }
-        }
+				query.add(getUpdateSetClause(field.getDBColumnName(), value));
+			}
 
+			if (field.hasEntityMapping()
+					&& MappingType.ONE_TO_MANY.equals(field.getEntityMapping())) {
+				Object subObject = field.getValue(object);
 
-        return object;
-    }
+				MergeMapping nextMapping = new MergeMapping(object, field);
+				nextMapping.setObjectTo(subObject);
+
+				subObject = merge(updater, subObject, nextMapping);
+				field.setValue(object, subObject); // should not e nessesary
+
+				// now get the UUID for the insert
+				Object value = DaoUtils.getUuid(subObject);
+
+				// add insertPair
+				query.add(getUpdateSetClause(
+						DaoUtils.getTableName(field.getType()) + "_UUID", value));
+			}
+		}
+
+		if (mapping != null && mapping.isManyToOne()) {
+			query.add(getUpdateSetClause(
+					"" + DB.ESCAPE + "" + mapping.getColumnFrom() + ""
+							+ DB.ESCAPE + "", mapping.getValueFrom()));
+		}
+
+		if (!query.isEmpty()) {
+			String update = "UPDATE " + DB.ESCAPE + "" + tableName + ""
+					+ DB.ESCAPE + " SET " + query.getList() + " WHERE "
+					+ DB.ESCAPE + "" + tableName + "" + DB.ESCAPE + "."
+					+ DB.ESCAPE + "UUID" + DB.ESCAPE + " = '"
+					+ DaoUtils.getUuid(object) + "'";
+
+			if (!updater.execute(update)) {
+				throw new UpdateException(
+						"no entry found in database for object: " + object);
+			}
+		}
+
+		return object;
+	}
 }

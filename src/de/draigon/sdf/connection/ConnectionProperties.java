@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
+import de.draigon.sdf.exception.DBException;
+
 
 /**
  * ConnectionProperties object created from the db.properties file places in
@@ -19,9 +21,6 @@ public class ConnectionProperties {
 	/** name of the properties file */
 	private static final String PROPERTIES_NAME = "db.properties";
 
-	/** Instance for singleton */
-	private static ConnectionProperties properties;
-
 	private String host;
 	private String username;
 	private String password;
@@ -29,42 +28,20 @@ public class ConnectionProperties {
 	private String port;
 	private boolean embedded = false;
 
-	public int poolsizeMin;
+	public Integer poolsizeMin;
 
 	/** default value for max poolsize */
-	public int poolsizeMax;
+	public Integer poolsizeMax;
 
 	/** default value for the poolsize buffer */
-	public int poolsizeBuffer;
+	public Integer poolsizeBuffer;
 
 	/**
 	 * private constructor to prevent initialisation
+	 * @throws IOException 
 	 */
-	private ConnectionProperties() {
-
-	}
-
-	/**
-	 * Returns the instance of the singleton. If not exists, a new instance is
-	 * created
-	 * 
-	 * @return instance of the singleton
-	 * @throws IOException
-	 *             if properties cant be load
-	 */
-	public static ConnectionProperties get() throws IOException {
-
-		if (properties == null) {
-			properties = new ConnectionProperties();
-
-			try {
-				properties.reload();
-			} catch (IOException e) {
-				throw new IOException("No databaseproperties could be load.", e);
-			}
-		}
-
-		return properties;
+	public ConnectionProperties() throws IOException {
+		this.reload();
 	}
 
 	/**
@@ -126,7 +103,7 @@ public class ConnectionProperties {
 	 * 
 	 * @return value of the property
 	 */
-	public int getPoolsizeBuffer() {
+	public Integer getPoolsizeBuffer() {
 		return poolsizeBuffer;
 	}
 
@@ -135,7 +112,7 @@ public class ConnectionProperties {
 	 * 
 	 * @return value of the property
 	 */
-	public int getPoolsizeMax() {
+	public Integer getPoolsizeMax() {
 		return poolsizeMax;
 	}
 
@@ -144,7 +121,7 @@ public class ConnectionProperties {
 	 * 
 	 * @return value of the property
 	 */
-	public int getPoolsizeMin() {
+	public Integer getPoolsizeMin() {
 		return poolsizeMin;
 	}
 
@@ -175,7 +152,6 @@ public class ConnectionProperties {
 									+ PROPERTIES_NAME);
 				}
 			}
-
 			this.host = properties.getProperty("host");
 			this.database = properties.getProperty("database");
 			this.username = properties.getProperty("username");
@@ -184,17 +160,16 @@ public class ConnectionProperties {
 			this.embedded = "true".equalsIgnoreCase(properties
 					.getProperty("embedded"));
 
-			this.poolsizeMin = getPropertyInt(properties, "poolsize_min",
-					ConnectionFactory.DEFAULT_POOLSIZE_MIN);
-			this.poolsizeMax = getPropertyInt(properties, "poolsize_max",
-					ConnectionFactory.DEFAULT_POOLSIZE_MAX);
-			this.poolsizeBuffer = getPropertyInt(properties, "poolsize_buffer",
-					ConnectionFactory.DEFAULT_POOLSIZE_BUFFER);
+			this.poolsizeMin = loadPropertyInt(properties, "poolsize_min");
+			
+			this.poolsizeMax = loadPropertyInt(properties, "poolsize_max");
+			
+			this.poolsizeBuffer = loadPropertyInt(properties, "poolsize_buffer");
 
-		} catch (IOException e) {
+		} catch (Exception e) {
 			throw new IOException(
 					"could not load properties for databaseconnection from: "
-							+ PROPERTIES_NAME);
+							+ PROPERTIES_NAME, e);
 		}
 
 	}
@@ -211,16 +186,19 @@ public class ConnectionProperties {
 	 *            the default value, if no int can be fetched
 	 * @return the fethed value or defaultValue if not set
 	 */
-	private int getPropertyInt(Properties properties, String key,
-			int defaultValue) {
+	private Integer loadPropertyInt(Properties properties, String key) {
 		String value = properties.getProperty(key);
+
 		if (value == null) {
-			return defaultValue;
+			return null;
+		}
+		if(!value.matches("[0-9]+")){
+			throw new DBException(properties+"-value from properties file must be an integer value (0-9) but is '"+value+"'");
 		}
 		try {
 			return Integer.parseInt(value);
 		} catch (NumberFormatException e) {
-			return defaultValue;
+			return null;
 		}
 	}
 }

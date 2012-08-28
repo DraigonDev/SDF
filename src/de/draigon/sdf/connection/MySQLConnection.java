@@ -146,7 +146,7 @@ public class MySQLConnection extends DBConnection {
     private void createConnection() {
 
         try {
-            ConnectionProperties properties = ConnectionProperties.get();
+            ConnectionProperties properties = new ConnectionProperties();
 
             Class.forName(SQL_DRIVER_NAME);
 

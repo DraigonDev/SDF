@@ -42,14 +42,14 @@ public class ConnectionFactory {
 
 	/** the minimal poolsize */
 	private static int poolsizeMin;
-	
+
 	/** the maximal poolsize */
 	private static int poolsizeMax;
-	
+
 	/** the poolsize buffer */
 	private static int poolsizeBuffer;
 
-	//TODO if all works, delete this rows
+	// TODO if all works, delete this rows
 	// @SuppressWarnings("unused")
 	// private static ConnectionFactory destructor = new ConnectionFactory();
 
@@ -69,16 +69,37 @@ public class ConnectionFactory {
 	 * Initiate the database pool.
 	 */
 	static {
-		try{
-		ConnectionFactory.embedded = ConnectionProperties.get().isEmbedded();
-		ConnectionFactory.poolsizeMin = ConnectionProperties.get().getPoolsizeMin();
-		ConnectionFactory.poolsizeMax = ConnectionProperties.get().getPoolsizeMax();
-		ConnectionFactory.poolsizeBuffer = ConnectionProperties.get().getPoolsizeBuffer();
-		
-		}catch (IOException e) {
-            throw new DBException("could not connect to database", e);
+		try {
+			ConnectionProperties properties = new ConnectionProperties();
+
+			ConnectionFactory.embedded = properties.isEmbedded();
+			ConnectionFactory.poolsizeMin = properties.getPoolsizeMin() != null ? properties
+					.getPoolsizeMin() : ConnectionFactory.DEFAULT_POOLSIZE_MIN;
+
+			ConnectionFactory.poolsizeMax = properties.getPoolsizeMax() != null ? properties
+					.getPoolsizeMax() : ConnectionFactory.DEFAULT_POOLSIZE_MAX;
+
+			ConnectionFactory.poolsizeBuffer = properties.getPoolsizeBuffer() != null ? properties
+					.getPoolsizeBuffer()
+					: ConnectionFactory.DEFAULT_POOLSIZE_BUFFER;
+
+			if (ConnectionFactory.poolsizeMin < 1) {
+				throw new DBException("min poolsize must be minimum 1 (value="
+						+ ConnectionFactory.poolsizeMin + ")");
+			}
+			if (ConnectionFactory.poolsizeMax < 1) {
+				throw new DBException("min poolsize must be minimum 1 (value="
+						+ ConnectionFactory.poolsizeMax + ")");
+			}
+			if (ConnectionFactory.poolsizeBuffer < 0) {
+				throw new DBException("poolsizebuffer must be positive (value="
+						+ ConnectionFactory.poolsizeBuffer + ")");
+			}
+
+		} catch (IOException e) {
+			throw new DBException("could not connect to database", e);
 		}
-		
+
 		if (ConnectionFactory.embedded) {
 			Loggin.logConnectionFactory("using embedded database (org.apache.derby)");
 		} else {
@@ -128,6 +149,7 @@ public class ConnectionFactory {
 				connections.remove(connection);
 			}
 		}
+		waiting = false;
 	}
 
 	/**
@@ -183,6 +205,7 @@ public class ConnectionFactory {
 
 				return conn;
 			}
+			// no free connection found
 
 			if (connections.size() < ConnectionFactory.poolsizeMax) {
 				conn = buildConnection();
@@ -193,9 +216,12 @@ public class ConnectionFactory {
 						+ connections.size());
 
 				return conn;
-			}
+			} else {
+				Loggin.logConnectionFactory("pending for connection: max poolsize of '"
+						+ ConnectionFactory.poolsizeMax + "' reached");
 
-			return waitForConnection();
+				waitForConnection();
+			}
 		}
 
 	}
@@ -218,12 +244,13 @@ public class ConnectionFactory {
 	 * 
 	 * @return the free connection.
 	 */
-	private static DBConnection waitForConnection() {
+	private static void waitForConnection() {
+		// waiting will be set true through notifyfreeconnection
 		waiting = true;
 
 		double delay = 0;
 
-		while (!waiting) {
+		while (waiting) {
 
 			try {
 				Thread.sleep(100);
@@ -247,7 +274,5 @@ public class ConnectionFactory {
 								+ " seconds now. - check if all connections are closed correctly");
 			}
 		}
-
-		return searchConnection();
 	}
 }
