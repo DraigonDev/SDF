@@ -14,16 +14,17 @@ import de.draigon.sdf.annotation.Table;
  */
 public abstract class Entity {
 
-    // This field will be acessed via reflection. Its nessesary, to make databaseentries unique
-    // and give them a fixed id
+    /** This field will be acessed via reflection. Its nessesary, to make databaseentries unique and give them a fixed id*/
     @DBColumn("UUID")
     private String uuid;
 
+    /** getter for the uuid. will be acessed via reflection */
     @SuppressWarnings("unused")
     private String getUuid() {
         return uuid;
     }
 
+    /** setter for the uuid. will be acessed via reflection */
     @SuppressWarnings("unused")
     private void setUuid(String uuid) {
         this.uuid = uuid;
