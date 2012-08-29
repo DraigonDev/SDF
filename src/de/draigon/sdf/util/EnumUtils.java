@@ -4,19 +4,20 @@ import de.draigon.sdf.annotation.DBValue;
 
 
 /**
- * FIXME: Javadoc einfuegen
+ * Utilclass to access enums with {@link DBValue} annotation
  *
- * @author
+ * @author Draigon Development
+ * @version 1.0
  */
 public class EnumUtils {
 
     /**
-     * FIXME: Javadoc einfuegen
+     * returns an enum-value to an ID
      *
-     * @param   id
-     * @param   type
+     * @param   id the id to fetch
+     * @param   type the class to convert to
      *
-     * @return
+     * @return the enum-value mapped by the id in the specified class. null if id is null.
      */
     public static <I> I fromId(Class<I> type, Integer id) {
 
@@ -45,11 +46,11 @@ public class EnumUtils {
     }
 
     /**
-     * FIXME: Javadoc kontrollieren Liefert den Wert von id
+     * returns the id to an enum-value
      *
-     * @param   value
+     * @param   value the enum value
      *
-     * @return  Der Wert von id
+     * @return  the id mapped on this value
      */
     public static Integer getId(Object value) {
 

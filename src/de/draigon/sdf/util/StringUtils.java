@@ -1,18 +1,19 @@
 package de.draigon.sdf.util;
 
 /**
- * FIXME: Javadoc einfuegen
+ * Util class for String operations
  *
- * @author
+ * @author Draigon Development
+ * @version 1.0
  */
 public class StringUtils {
 
     /**
-     * FIXME: Javadoc einfuegen
+     * converts the first letter of a String to uppercase
      *
-     * @param   value
+     * @param   value the string to convert
      *
-     * @return
+     * @return value with first letter to upper case
      */
     public static String firstToUpper(String value) {
 
