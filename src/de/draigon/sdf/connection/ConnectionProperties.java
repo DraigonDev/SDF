@@ -36,6 +36,12 @@ public class ConnectionProperties {
 	/** default value for the poolsize buffer */
 	public Integer poolsizeBuffer;
 
+	private boolean showQuery;
+
+	private boolean connectionFactoryInfo;
+
+	private boolean tableStructureWarning;
+
 	/**
 	 * private constructor to prevent initialisation
 	 * @throws IOException 
@@ -159,6 +165,16 @@ public class ConnectionProperties {
 			this.port = properties.getProperty("port");
 			this.embedded = "true".equalsIgnoreCase(properties
 					.getProperty("embedded"));
+			
+
+			this.showQuery = "true".equalsIgnoreCase(properties
+					.getProperty("show_query"));
+
+			this.connectionFactoryInfo = "true".equalsIgnoreCase(properties
+					.getProperty("connection_factory_info"));
+
+			this.tableStructureWarning = "true".equalsIgnoreCase(properties
+					.getProperty("table_structure_warning"));
 
 			this.poolsizeMin = loadPropertyInt(properties, "poolsize_min");
 			
@@ -200,5 +216,32 @@ public class ConnectionProperties {
 		} catch (NumberFormatException e) {
 			return null;
 		}
+	}
+
+	/**
+	 * Getter for property
+	 * 
+	 * @return value of the property
+	 */
+	public boolean isShowQuery() {
+		return this.showQuery;
+	}
+
+	/**
+	 * Getter for property
+	 * 
+	 * @return value of the property
+	 */
+	public boolean isConnectionFactoryInfo() {
+		return this.connectionFactoryInfo;
+	}
+
+	/**
+	 * Getter for property
+	 * 
+	 * @return value of the property
+	 */
+	public boolean isTableStructureWarning() {
+		return this.tableStructureWarning;
 	}
 }
