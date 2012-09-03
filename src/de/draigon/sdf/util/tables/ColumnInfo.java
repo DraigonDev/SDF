@@ -1,10 +1,10 @@
 package de.draigon.sdf.util.tables;
 
-import java.util.Date;
-
 import de.draigon.sdf.annotation.DBFieldLength;
+import de.draigon.sdf.connection.ConnectionFactory;
 import de.draigon.sdf.daos.util.DaoUtils;
 import de.draigon.sdf.exception.DBException;
+import de.draigon.sdf.objects.Enum;
 import de.draigon.sdf.objects.ExtendedField;
 import de.draigon.sdf.objects.MappingType;
 import de.draigon.sdf.util.Loggin;
@@ -36,10 +36,6 @@ public class ColumnInfo {
 		this.name = name2;
 		this.type = type2;
 		this.length = length2;
-
-		if ("INTEGER".equalsIgnoreCase(this.type)) {
-			this.type = "INT";
-		}
 	}
 
 	private String getFieldName(ExtendedField field) {
@@ -54,10 +50,12 @@ public class ColumnInfo {
 
 			if (field.hasEntityMapping()
 					&& MappingType.ONE_TO_MANY.equals(field.getEntityMapping())) {
-				return DaoUtils.getTableName(field.getType()) + "_UUID";
+				return DaoUtils.getTableName(field.getMappedType()) + "_UUID";
 			}
 		} catch (NullPointerException e) {
-			throw new DBException("cant get FieldName for field: " + field.getName() + " in class " + field.getMainObjectClass().getCanonicalName() , e);
+			throw new DBException("cant get FieldName for field: "
+					+ field.getName() + " in class "
+					+ field.getMainObjectClass().getCanonicalName(), e);
 		}
 
 		throw new IllegalArgumentException("should never occure");
@@ -69,49 +67,19 @@ public class ColumnInfo {
 			return "VARCHAR"; // UUID
 		}
 
-		try {
-			Class<?> clazzOfField = field.getType();
+		Class<?> clazzOfField = field.getMappedType();
 
-			if (String.class.equals(clazzOfField)) {
-				return "VARCHAR";
-			}
-
-			if (Long.class.equals(clazzOfField)) {
-				return "BIGINT";
-			}
-
-			if (Integer.class.equals(clazzOfField)) {
-				return "INT";
-			}
-
-			if (Boolean.class.equals(clazzOfField)) {
-
-				return "TINYINT";
-			}
-
-			if (Date.class.equals(clazzOfField)) {
-				return "DATETIME";
-			}
-
-			if (Float.class.equals(clazzOfField)) {
-				return "FLOAT";
-			}
-
-			if (Double.class.equals(clazzOfField)) {
-				return "DOUBLE";
-			}
-
-			// Check for Enum
-			if (clazzOfField.isEnum()) {
-				return "SMALLINT";
-			}
-		} catch (IllegalArgumentException e) {
-			throw new DBException("unable to alter table type for field '"
-					+ field.getName() + "' to type "
-					+ field.getMainObjectClass(), e);
-		}
+		// Check for Enum
+		if (clazzOfField.isEnum()) {
+			clazzOfField = Enum.class;
+		} 
+		
+		if(ConnectionFactory.getDatatypeMappings().containsKey(clazzOfField)){
+			return ConnectionFactory.getDatatypeMappings().get(clazzOfField);
+		}else{
 		throw new DBException("unsupported type for field '" + field.getName()
 				+ "' on class " + field.getMainObjectClass());
+		}
 	}
 
 	private Integer getLength(ExtendedField field) {
@@ -123,7 +91,7 @@ public class ColumnInfo {
 		}
 
 		try {
-			Class<?> clazzOfField = field.getType();
+			Class<?> clazzOfField = field.getMappedType();
 
 			if (String.class.equals(clazzOfField)) {
 				if (field.getField().isAnnotationPresent(DBFieldLength.class)) {

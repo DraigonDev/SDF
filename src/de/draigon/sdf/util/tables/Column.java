@@ -18,7 +18,7 @@ public class Column {
     public Column(ExtendedField field) {
         this.fieldInfo = new ColumnInfo(field);
         if(MappingType.MANY_TO_ONE.equals(field.getEntityMapping())){
-            this.tablename = DaoUtils.getTableName(field.getType());
+            this.tablename = DaoUtils.getTableName(field.getMappedType());
         }else{
             this.tablename = field.getTableName();
         }
