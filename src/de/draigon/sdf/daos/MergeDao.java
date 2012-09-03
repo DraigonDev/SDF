@@ -108,7 +108,7 @@ public class MergeDao<T> {
 			return dbColumnName + "='" + DaoUtils.DATE_FORMATTER.format(value)
 					+ "'";
 		} else if (value.getClass().isEnum()) {
-			return dbColumnName + "='" + EnumUtils.getId(value) + "'";
+			return dbColumnName + "=" + EnumUtils.getId(value) + "";
 		} else if (value instanceof String) {
 			value = value.toString().replaceAll("'", "''");
 
@@ -173,7 +173,7 @@ public class MergeDao<T> {
 				Object value = DaoUtils.getUuid(subObject);
 
 				// add insertPair
-				columns.add(DaoUtils.getTableName(field.getType()) + "_UUID");
+				columns.add(DaoUtils.getTableName(field.getMappedType()) + "_UUID");
 				values.add(getInsertValue(value));
 			}
 		}
@@ -298,7 +298,7 @@ public class MergeDao<T> {
 
 				// add insertPair
 				query.add(getUpdateSetClause(
-						DaoUtils.getTableName(field.getType()) + "_UUID", value));
+						DaoUtils.getTableName(field.getMappedType()) + "_UUID", value));
 			}
 		}
 
