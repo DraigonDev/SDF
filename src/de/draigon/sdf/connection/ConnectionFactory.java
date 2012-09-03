@@ -2,7 +2,9 @@ package de.draigon.sdf.connection;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import de.draigon.sdf.exception.DBException;
@@ -49,10 +51,8 @@ public class ConnectionFactory {
 	/** the poolsize buffer */
 	private static int poolsizeBuffer;
 
-	// TODO if all works, delete this rows
-	// @SuppressWarnings("unused")
-	// private static ConnectionFactory destructor = new ConnectionFactory();
-
+	private static Map<Class<?>, String> datatypemappings = new HashMap<Class<?>, String>();
+	
 	/**
 	 * //Will be called, if factory is destroyed, so on system exit. Then in
 	 * case of embadded database usage, the derby database is stopped.
@@ -111,6 +111,9 @@ public class ConnectionFactory {
 		for (int i = 0; i < poolsizeMin; i++) {
 			connections.add(buildConnection());
 		}
+		
+		//set the Mappings for table-creation
+		datatypemappings.putAll(connections.get(0).getDatatypeMappings());
 
 		Loggin.logConnectionFactory("initialized a pool of "
 				+ connections.size() + " connections.");
@@ -225,6 +228,15 @@ public class ConnectionFactory {
 		}
 
 	}
+	
+	/**
+     * returns a list of mappings, an java Object is Mapped to the DB-types
+     * 
+     * @return a mapping list class to Datadype
+     */
+    public static Map<Class<?>, String> getDatatypeMappings(){
+    	return datatypemappings ;
+    }
 
 	/**
 	 * Builds a new DBConnection in association to embeddded or mysql database.

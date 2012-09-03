@@ -6,6 +6,9 @@ import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import de.draigon.sdf.exception.DBException;
 import de.draigon.sdf.util.Loggin;
@@ -192,4 +195,23 @@ public class EmbeddedConnection extends DBConnection {
            Loggin.logConnectionFactory("embedded database shut down normally");    
         }  
     }
+
+    /**
+     * {@inheritDoc}
+     */
+	@Override
+	public Map<Class<?>, String> getDatatypeMappings() {
+		Map<Class<?>, String> mappings = new HashMap<Class<?>, String>();
+		
+		mappings.put(String.class, "VARCHAR");
+		mappings.put(Long.class, "BIGINT");
+		mappings.put(Integer.class, "INTEGER");
+		mappings.put(Boolean.class, "BOOLEAN");
+		mappings.put(Date.class, "TIMESTAMP");
+		mappings.put(Float.class, "DOUBLE");
+		mappings.put(Double.class, "DOUBLE");
+		mappings.put(de.draigon.sdf.objects.Enum.class, "INTEGER");
+		
+		return mappings;
+	}
 }

@@ -3,6 +3,7 @@ package de.draigon.sdf.connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Map;
 
 /**
  * Abstact class to define a DBConnection for the {@link ConnectionFactory}
@@ -73,4 +74,11 @@ public abstract class DBConnection {
      * @return
      */
     public abstract DatabaseMetaData getMetaData();
+    
+    /**
+     * returns a list of mappings, an java Object is Mapped to the DB-types
+     * 
+     * @return a mapping list class to Datadype
+     */
+    public abstract Map<Class<?>, String> getDatatypeMappings();
 }

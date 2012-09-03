@@ -6,6 +6,9 @@ import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import de.draigon.sdf.exception.DBException;
 
@@ -166,4 +169,23 @@ public class MySQLConnection extends DBConnection {
             throw new DBException("could not connect to database", e);
         }
     }
+    
+    /**
+     * {@inheritDoc}
+     */
+	@Override
+	public Map<Class<?>, String> getDatatypeMappings() {
+		Map<Class<?>, String> mappings = new HashMap<Class<?>, String>();
+		
+		mappings.put(String.class, "VARCHAR");
+		mappings.put(Long.class, "BIGINT");
+		mappings.put(Integer.class, "INT");
+		mappings.put(Boolean.class, "TINYINT");
+		mappings.put(Date.class, "DATETIME");
+		mappings.put(Float.class, "FLOAT");
+		mappings.put(Double.class, "DOUBLE");
+		mappings.put(de.draigon.sdf.objects.Enum.class, "SMALLINT");
+		
+		return mappings;
+	}
 }
