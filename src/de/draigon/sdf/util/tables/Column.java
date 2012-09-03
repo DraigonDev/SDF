@@ -12,7 +12,7 @@ public class Column {
 
     private ColumnInfo fieldInfo;
     private String tablename;
-
+ 
     private Status status = null;
 
     public Column(ExtendedField field) {
