@@ -3,6 +3,7 @@ package de.draigon.sdf.objects;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
+import java.util.List;
 
 import de.draigon.sdf.annotation.Cascade;
 import de.draigon.sdf.annotation.CascadeDelete;
@@ -18,367 +19,371 @@ import de.draigon.sdf.exception.DBException;
 import de.draigon.sdf.util.DB;
 import de.draigon.sdf.util.StringUtils;
 
-
 /**
- * FIXME: Javadoc einfuegen
- *
- * @author
+ * expands a {@link Field} with extra methods by covering the original class
+ * 
+ * @author Draigon Development
+ * @version 1.0
  */
 public class ExtendedField {
-    private Class<?> clazz;
-    private Field field;
-    private String tableName;
-    private MappingType entityMapping;
-    private Class<?> mainObjectClass;
+	private Class<?> clazz;
+	private Field field;
+	private String tableName;
+	private MappingType entityMapping;
+	private Class<?> mainObjectClass;
 
-    /**
-     * FIXME: Javadoc kontrollieren Erstellt eine neue Instanz von ExtendedField.
-     *
-     * @param  clazz
-     * @param  field
-     */
-    public ExtendedField(Class<?> mainObjectclass, Class<?> clazz, Field field) {
-        this.tableName = DaoUtils.getTableName(mainObjectclass);
-        this.clazz = clazz;
-        this.field = field;
-        this.mainObjectClass = mainObjectclass;
+	/**
+	 * instanciates a new extendedField
+	 * 
+	 * @param mainObjectclass
+	 *            the subclass invoked for the field
+	 * @param clazz
+	 *            the cncret class with this field
+	 * @param field
+	 *            the field
+	 */
+	public ExtendedField(Class<?> mainObjectclass, Class<?> clazz, Field field) {
+		this.tableName = DaoUtils.getTableName(mainObjectclass);
+		this.clazz = clazz;
+		this.field = field;
+		this.mainObjectClass = mainObjectclass;
 
-        field.setAccessible(true);
+		field.setAccessible(true);
 
-        buildMapping();
-    }
-    
-    public String getTableName() {
-        return tableName;
-    }
+		buildMapping();
+	}
 
-    /**
-     * FIXME: Javadoc kontrollieren Liefert den Wert von DBColumn name
-     *
-     * @return  Der Wert von DBColumn name
-     */
-    public String getDBColumnName() {
-        return ""+DB.ESCAPE+"" + this.getDBColumnAnnotation()
-            .value() + ""+DB.ESCAPE+"";
-    }
-    
-    public String getDBColumnNameWithoutEscape() {
-        return this.getDBColumnAnnotation()
-            .value();
-    }
+	/**
+	 * returns the tablename where the subclass is mapped to
+	 * 
+	 * @return the tablename where the subclass is mapped to
+	 */
+	public String getTableName() {
+		return tableName;
+	}
 
-    /**
-     * FIXME: Javadoc kontrollieren Liefert den Wert von DBFull qualified name
-     *
-     * @return  Der Wert von DBFull qualified name
-     */
-    public String getDBFullQualifiedName() {
-        return ""+DB.ESCAPE+"" + this.tableName + ""+DB.ESCAPE+"." + getDBColumnName();
-    }
+	/**
+	 * returns the column name which this field is mapped to with db specific
+	 * escapes
+	 * 
+	 * @return the column name which this field is mapped to
+	 */
+	public String getDBColumnName() {
+		return "" + DB.ESCAPE + "" + this.getDBColumnAnnotation().value() + ""
+				+ DB.ESCAPE + "";
+	}
 
-    /**
-     * FIXME: Javadoc kontrollieren Liefert den Wert von entity mapping
-     *
-     * @return  Der Wert von entity mapping
-     */
-    public MappingType getEntityMapping() {
-        return this.entityMapping;
-    }
+	/**
+	 * returns the column name which this field is mapped to
+	 * 
+	 * @return the column name which this field is mapped to
+	 */
+	public String getDBColumnNameWithoutEscape() {
+		return this.getDBColumnAnnotation().value();
+	}
 
-    /**
-     * FIXME: Javadoc kontrollieren Liefert den Wert von field
-     *
-     * @return  Der Wert von field
-     */
-    public Field getField() {
-        return field;
-    }
+	/**
+	 * returns the full qualified column name which this field is mapped to with
+	 * db specific escapes
+	 * 
+	 * @return the full qualified column name which this field is mapped to
+	 */
+	public String getDBFullQualifiedName() {
+		return "" + DB.ESCAPE + "" + this.tableName + "" + DB.ESCAPE + "."
+				+ getDBColumnName();
+	}
 
-    /**
-     * FIXME: Javadoc kontrollieren Liefert den Wert von main object class
-     *
-     * @return  Der Wert von main object class
-     */
-    public Class<?> getMainObjectClass() {
-        return mainObjectClass;
-    }
+	/**
+	 * returns the entity-mapping (if extsist) on this field.
+	 * 
+	 * @return null if no object-cross mapping exists, else the annotated {@link MappingType}
+	 */
+	public MappingType getEntityMapping() {
+		return this.entityMapping;
+	}
 
-    /**
-     * FIXME: Javadoc kontrollieren Liefert den Wert von mapped tyoe
-     *
-     * @return  Der Wert von mapped tyoe
-     */
-    public Class<?> getMappedType() {
+	/**
+	 * returns the {@link Field}
+	 * 
+	 * @return the field
+	 */
+	public Field getField() {
+		return field;
+	}
 
-        switch (this.getEntityMapping()) {
-        case ONE_TO_ONE:
-        case ONE_TO_MANY:
-            return this.getType();
-        case MANY_TO_ONE:
-        case MANY_TO_MANY:
+	/**
+	 * returns the subclass this field is mapped in
+	 * 
+	 * @return the subclass this field is mapped in
+	 */
+	public Class<?> getMainObjectClass() {
+		return mainObjectClass;
+	}
 
-            if (!"interface java.util.List".equals(this.field.getType().toString())) {
-                throw new DBException(
-                    "for mappings only java.util.List is supported as collectiontype");
-            }
+	/**
+	 * gets the type of the field. If the field is mapped as {@link ManyToOne}
+	 * or {@link ManyToMany}, the mapped field should be {@link List}, but the
+	 * returned type will be the generic, this list contains.
+	 * 
+	 * @return the mapped type
+	 */
+	public Class<?> getMappedType() {
+		if(this.isMappedAsList()){
+			if (!"interface java.util.List".equals(this.field.getType()
+					.toString())) {
+				throw new DBException(
+						"for mappings only java.util.List is supported as collectiontype (Field="+this.clazz.getCanonicalName()+"#"+this.field.getName()+")");
+			}
 
-            ParameterizedType type = (ParameterizedType) this.field.getGenericType();
+			ParameterizedType type = (ParameterizedType) this.field
+					.getGenericType();
 
-            return (Class<?>) type.getActualTypeArguments()[0];
+			return (Class<?>) type.getActualTypeArguments()[0];
+		}else{
+			return this.getField().getType();
+		}
+	}
 
-        default:
-            throw new IllegalArgumentException("can not happen");
-        }
-    }
+	/**
+	 * returns the name of the n/m mappingtable.
+	 * 
+	 * @return the name of the n/m mappingtable. null, if no {@link ManyToMany} mapping exists on this field.
+	 */
+	public String getMappingTable() {
+		ManyToMany mapping = field.getAnnotation(ManyToMany.class);
+		
+		if(mapping == null){
+			return null;
+		}
+		
+		return mapping.value();
+	}
 
-    /**
-     * FIXME: Javadoc kontrollieren Liefert den Wert von mapping table
-     *
-     * @return  Der Wert von mapping table
-     */
-    public String getMappingTable() {
-        ManyToMany mapping = field.getAnnotation(ManyToMany.class);
+	/**
+	 * returns the type, the setter should take as parameter
+	 * 
+	 * @return the type of the field, or {@link List} if this field is mapped as {@link ManyToMany} or ManyToOne
+	 */
+	public Class<?> getMethodType() {
 
-        return mapping.value();
-    }
+		if (this.isMappedAsList()) {
 
-    /**
-     * FIXME: Javadoc kontrollieren Liefert den Wert von fulle qualified type
-     *
-     * @return  Der Wert von fulle qualified type
-     */
-    public Class<?> getMethodType() {
+			try {
+				return Class.forName("java.util.List");
+			} catch (ClassNotFoundException e) {
+				throw new IllegalArgumentException("should never happen");
+			}
+		} else {
+			return this.getMappedType();
+		}
+	}
 
-        if (this.isMappedAsList()) {
+	/**
+	 * returns the field's name
+	 * 
+	 * @return the name of the field
+	 */
+	public String getName() {
+		return this.field.getName();
+	}
 
-            try {
-                return Class.forName("java.util.List");
-            } catch (ClassNotFoundException e) {
-                throw new IllegalArgumentException("should never happen");
-            }
-        } else {
-            return this.getType();
-        }
-    }
+	/**
+	 * returns the class, this field is specified in
+	 * 
+	 * @return the class this field is specified in
+	 */
+	public Class<?> getParentClass() {
+		return this.clazz;
+	}
 
-    /**
-     * FIXME: Javadoc kontrollieren Liefert den Wert von name
-     *
-     * @return  Der Wert von name
-     */
-    public String getName() {
-        return this.field.getName();
-    }
+	/**
+	 * gets the full qualified name of the field in DB with underscore(_) instead of the db accessor (.)
+	 * 
+	 * @return the full qualified name with an underscore
+	 */
+	public String getResultFullQualifiedName() {
+		return this.tableName + "_" + this.getDBColumnAnnotation().value();
+	}
 
-    /**
-     * FIXME: Javadoc kontrollieren Liefert den Wert von parent class
-     *
-     * @return  Der Wert von parent class
-     */
-    public Class<?> getParentClass() {
-        return this.clazz;
-    }
+	/**
+	 * returns the value of the field to the given object
+	 * 
+	 * @param instance the instance to invoke
+	 * 
+	 * @return the value of the field in the instance
+	 */
+	public Object getValue(Object instance) {
 
-    /**
-     * FIXME: Javadoc kontrollieren Liefert den Wert von result full qualified name
-     *
-     * @return  Der Wert von result full qualified name
-     */
-    public String getResultFullQualifiedName() {
-        return this.tableName + "_" + this.getDBColumnAnnotation()
-            .value();
-    }
+		try {
+			return this.getGetter().invoke(instance);
+		} catch (Exception e) {
+			throw new DBException("unable to invoke getter for property '"
+					+ field.getName() + "' + on class '" + clazz + "'");
+		}
 
-    /**
-     * FIXME: Javadoc kontrollieren Liefert den Wert von type
-     *
-     * @return  Der Wert von type
-     */
-    public Class<?> getType() {
+	}
 
-        if (this.isMappedAsList()) {
-            return this.getMappedType();
-        } else {
-            return this.getField()
-                .getType();
-        }
-    }
+	/**
+	 * returns if the field is mapped to a DB-field
+	 * 
+	 * @return true, if the field has an entitymapping
+	 */
+	public boolean hasDBMapping() {
+		return this.getDBColumnAnnotation() != null;
+	}
 
-    /**
-     * FIXME: Javadoc kontrollieren Liefert den Wert von value
-     *
-     * @param   patternObject
-     *
-     * @return  Der Wert von value
-     */
-    public Object getValue(Object instance) {
+	/**
+	 * returns if the field has an entitymapping
+	 * 
+	 * @return true, if the field has an entitymapping
+	 */
+	public boolean hasEntityMapping() {
+		return getEntityMapping() != null;
+	}
 
-        try {
-            return this.getGetter()
-                .invoke(instance);
-        } catch (Exception e) {
-            throw new DBException("unable to invoke getter for property '"
-                + field.getName() + "' + on class '" + clazz + "'");
-        }
+	/**
+	 * returns if the field is cascading delete
+	 * 
+	 * @return true if the field has {@link Cascade} or {@link CascadeDelete}
+	 *         annotation
+	 */
+	public boolean isCascadingDelete() {
+		return ((field.isAnnotationPresent(Cascade.class)) || field
+				.isAnnotationPresent(CascadeDelete.class));
+	}
 
-    }
+	/**
+	 * returns if the field is cascading load
+	 * 
+	 * @return true if the field has {@link Cascade} or {@link CascadeLoad}
+	 *         annotation
+	 */
+	public boolean isCascadingLoad() {
+		return ((field.isAnnotationPresent(Cascade.class)) || field
+				.isAnnotationPresent(CascadeLoad.class));
+	}
 
-    /**
-     * FIXME: Javadoc einfuegen
-     *
-     * @return
-     */
-    public boolean hasDBMapping() {
-        return this.getDBColumnAnnotation() != null;
-    }
+	/**
+	 * returns if the field is cascading merge
+	 * 
+	 * @return true if the field has {@link Cascade} or {@link CascadeMerge}
+	 *         annotation
+	 */
+	public boolean isCascadingMerge() {
+		return ((field.isAnnotationPresent(Cascade.class)) || field
+				.isAnnotationPresent(CascadeMerge.class));
+	}
 
-    /**
-     * FIXME: Javadoc einfuegen
-     *
-     * @return
-     */
-    public boolean hasEntityMapping() {
-        return getEntityMapping() != null;
-    }
+	/**
+	 * returns true if this field is mapped as {@link ManyToMany} or
+	 * {@link ManyToOne} where a {@link List} is mapped.
+	 * 
+	 * @return true if this field is mapped as {@link ManyToMany} or
+	 *         {@link ManyToOne}
+	 */
+	public boolean isMappedAsList() {
 
-    /**
-     * FIXME: Javadoc kontrollieren Liefert den Wert von cascading delete
-     *
-     * @return  Der Wert von cascading delete
-     */
-    public boolean isCascadingDelete() {
-        return ((field.isAnnotationPresent(Cascade.class))
-            || field.isAnnotationPresent(CascadeDelete.class));
-    }
+		if (getEntityMapping() == null) {
+			return false;
+		} else {
 
-    /**
-     * FIXME: Javadoc kontrollieren Liefert den Wert von cascading load
-     *
-     * @return  Der Wert von cascading load
-     */
-    public boolean isCascadingLoad() {
-        return ((field.isAnnotationPresent(Cascade.class))
-            || field.isAnnotationPresent(CascadeLoad.class));
-    }
+			switch (getEntityMapping()) {
+			case MANY_TO_MANY:
+			case MANY_TO_ONE:
+				return true;
 
-    /**
-     * FIXME: Javadoc kontrollieren Liefert den Wert von cascading merge
-     *
-     * @return  Der Wert von cascading merge
-     */
-    public boolean isCascadingMerge() {
-        return ((field.isAnnotationPresent(Cascade.class))
-            || field.isAnnotationPresent(CascadeMerge.class));
-    }
+			default:
+				return false;
+			}
+		}
+	}
 
-    /**
-     * FIXME: Javadoc kontrollieren Liefert den Wert von mapped as list
-     *
-     * @return  Der Wert von mapped as list
-     */
-    public boolean isMappedAsList() {
+	/**
+	 * sets the new value to the field by reflecting its getter
+	 * 
+	 * @param value
+	 *            the value to set to the field
+	 */
+	public void setValue(Object instance, Object value) {
 
-        if (getEntityMapping() == null) {
-            return false;
-        } else {
+		try {
+			this.getSetter().invoke(instance, value);
+		} catch (Exception e) {
+			throw new DBException("unable to invoke setter("+this.getMappedType()+") for property '"
+					+ field.getName() + "' + on class '" + clazz + "' with value: " + value + "("+value.getClass().getCanonicalName()+")", e);
+		}
 
-            switch (getEntityMapping()) {
-            case MANY_TO_MANY:
-            case MANY_TO_ONE:
-                return true;
+	}
 
-            default:
-                return false;
-            }
-        }
-    }
+	/**
+	 * wraps the annotated mapping type to {@link MappingType}
+	 */
+	private void buildMapping() {
 
-    /**
-     * FIXME: Javadoc kontrollieren Setzt den neuen Wert von value
-     *
-     * @param  value
-     */
-    public void setValue(Object instance, Object value) {
+		if (field.isAnnotationPresent(OneToOne.class)) {
+			this.entityMapping = MappingType.ONE_TO_ONE;
+		}
 
-        try {
-            this.getSetter()
-                .invoke(instance, value);
-        } catch (Exception e) {
-            throw new DBException("unable to invoke setter for property '"
-                + field.getName() + "' + on class '" + clazz + "'", e);
-        }
+		if (field.isAnnotationPresent(ManyToOne.class)) {
+			this.entityMapping = MappingType.MANY_TO_ONE;
+		}
 
-    }
+		if (field.isAnnotationPresent(ManyToMany.class)) {
+			this.entityMapping = MappingType.MANY_TO_MANY;
+		}
 
-    private void buildMapping() {
+		if (field.isAnnotationPresent(OneToMany.class)) {
+			this.entityMapping = MappingType.ONE_TO_MANY;
+		}
 
-        if (field.isAnnotationPresent(OneToOne.class)) {
-            this.entityMapping = MappingType.ONE_TO_ONE;
-        }
+	}
 
-        if (field.isAnnotationPresent(ManyToOne.class)) {
-            this.entityMapping = MappingType.MANY_TO_ONE;
-        }
+	/**
+	 * gets the {@link DBColumn} annotation
+	 * 
+	 * @return die annotation
+	 */
+	private DBColumn getDBColumnAnnotation() {
+		return field.getAnnotation(DBColumn.class);
+	}
 
-        if (field.isAnnotationPresent(ManyToMany.class)) {
-            this.entityMapping = MappingType.MANY_TO_MANY;
-        }
-        
-        if (field.isAnnotationPresent(OneToMany.class)) {
-            this.entityMapping = MappingType.ONE_TO_MANY;
-        }
+	/**
+	 * returns the getter-method for this field.
+	 * 
+	 * @return the getter-method
+	 */
+	private Method getGetter() {
+		String getterName = "get" + StringUtils.firstToUpper(field.getName());
+		Method getter;
 
-    }
+		try {
+			getter = this.clazz.getDeclaredMethod(getterName);
+			getter.setAccessible(true);
+		} catch (Exception e) {
+			throw new DBException("no getter '" + getterName + "' for field '"
+					+ field.getName() + "' found on class '" + clazz + "'");
+		}
 
-    /**
-     * FIXME: Javadoc kontrollieren Liefert den Wert von DBColumn annotation
-     *
-     * @return  Der Wert von DBColumn annotation
-     */
-    private DBColumn getDBColumnAnnotation() {
-        return field.getAnnotation(DBColumn.class);
-    }
+		return getter;
+	}
 
-    /**
-     * FIXME: Javadoc kontrollieren Liefert den Wert von getter
-     *
-     * @return  Der Wert von getter
-     */
-    private Method getGetter() {
-        String getterName = "get"
-            + StringUtils.firstToUpper(field.getName());
-        Method getter;
+	/**
+	 * returns the getter-method for this field.
+	 * 
+	 * @return the getter-method
+	 */
+	private Method getSetter() {
+		String setterName = "set" + StringUtils.firstToUpper(field.getName());
+		Method setter;
 
-        try {
-            getter = this.clazz.getDeclaredMethod(getterName);
-            getter.setAccessible(true);
-        } catch (Exception e) {
-            throw new DBException("no getter '" + getterName
-                + "' for field '" + field.getName()
-                + "' found on class '" + clazz + "'");
-        }
+		try {
+			setter = this.clazz.getDeclaredMethod(setterName, getMethodType());
+			setter.setAccessible(true);
+		} catch (Exception e) {
+			throw new DBException("no setter '" + setterName + "' for field '"
+					+ field.getName() + "' found on class '" + clazz + "'", e);
+		}
 
-        return getter;
-    }
-
-    /**
-     * FIXME: Javadoc kontrollieren Liefert den Wert von setter
-     *
-     * @return  Der Wert von setter
-     */
-    private Method getSetter() {
-        String setterName = "set" + StringUtils.firstToUpper(field.getName());
-        Method setter;
-
-        try {
-            setter = this.clazz.getDeclaredMethod(setterName, getMethodType());
-            setter.setAccessible(true);
-        } catch (Exception e) {
-            throw new DBException("no setter '" + setterName
-                + "' for field '" + field.getName()
-                + "' found on class '" + clazz + "'", e);
-        }
-
-        return setter;
-    }
+		return setter;
+	}
 }
