@@ -1,11 +1,14 @@
 package de.draigon.sdf.util;
 
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 
 import java.util.Date;
 
 import de.draigon.sdf.connection.ConnectionFactory;
+import de.draigon.sdf.connection.ConnectionProperties;
 import de.draigon.sdf.connection.DBConnection;
+import de.draigon.sdf.exception.DBException;
 
 /**
  * Loggin for the Framework
@@ -18,22 +21,33 @@ import de.draigon.sdf.connection.DBConnection;
 public class Loggin {
 
 	/** parameter if loggin querys */
-	public static boolean SHOW_QUERY = false; // TODO: put to properties
+	private static boolean SHOW_QUERY;
 
 	/** parameter if showing informations abour the connection factory */
-	public static boolean CONNECTION_FACTORY_INFO = false; // TODO: put to
-															// properties
+	private static boolean CONNECTION_FACTORY_INFO;
 	/**
 	 * paraeter to tell if structure warning on table creater should be
 	 * published
 	 */
-	public static boolean TABLE_STRUCTURE_WARNINGS = true; // TODO: put to
-															// properties
+	private static boolean TABLE_STRUCTURE_WARNINGS;
 
 	/** formatter for loggin */
 	private static final SimpleDateFormat formatter = new SimpleDateFormat(
 			"yyyy.MM.dd HH:mm:ss");
 
+	static{
+		//initialize from properties
+		try {
+			ConnectionProperties properties = new ConnectionProperties();
+			SHOW_QUERY = properties.isShowQuery();
+			CONNECTION_FACTORY_INFO = properties.isConnectionFactoryInfo();
+			TABLE_STRUCTURE_WARNINGS = properties.isTableStructureWarning();
+			
+		} catch (IOException e) {
+			throw new DBException("cant read properties file...", e);
+		}
+	}
+	
 	/**
 	 * log messages from the connection factory
 	 * 
