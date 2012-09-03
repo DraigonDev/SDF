@@ -1,6 +1,5 @@
 package de.draigon.sdf.util.tables;
 
-import java.io.IOException;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -21,13 +20,6 @@ import de.draigon.sdf.util.DB;
 import de.draigon.sdf.util.Loggin;
 
 public class TableCreator {
-
-    public static void main(String[] args) throws ClassNotFoundException,
-            IOException {
-        Loggin.SHOW_QUERY = true;
-        create();
-    }
-
     public static void create() {
         Map<Class<?>, List<Column>> entities = new HashMap<Class<?>, List<Column>>();
         List<ExtendedField> manyToMany = new ArrayList<ExtendedField>();
@@ -44,11 +36,11 @@ public class TableCreator {
                 if (field.hasEntityMapping()) {
                     if (MappingType.MANY_TO_ONE
                             .equals(field.getEntityMapping())) {
-                        if (!entities.containsKey(field.getType())) {
-                            entities.put(field.getType(),
+                        if (!entities.containsKey(field.getMappedType())) {
+                            entities.put(field.getMappedType(),
                                     new ArrayList<Column>());
                         }
-                        entities.get(field.getType()).add(new Column(field));
+                        entities.get(field.getMappedType()).add(new Column(field));
                     }
                     if (MappingType.MANY_TO_MANY.equals(field
                             .getEntityMapping())) {
@@ -96,7 +88,7 @@ public class TableCreator {
         for (ExtendedField mapTab : manyToMany) {
             String mapTabName = mapTab.getMappingTable();
             
-            Column columnTabA = buildMappingColumn(DaoUtils.getTableName(mapTab.getType()), mapTabName);
+            Column columnTabA = buildMappingColumn(DaoUtils.getTableName(mapTab.getMappedType()), mapTabName);
             Column columnTabB = buildMappingColumn(mapTab.getTableName(), mapTabName);
             
             if(!tables.contains(mapTabName.toUpperCase())){
