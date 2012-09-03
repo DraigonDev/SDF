@@ -199,7 +199,7 @@ public class LoadDao<T> {
         throws SQLException {
     	
         try {
-            Class<?> clazzOfField = field.getType();
+            Class<?> clazzOfField = field.getMappedType();
 
             if (String.class.equals(clazzOfField)) {
                 field.setValue(instance, result.getString(field.getResultFullQualifiedName()));
