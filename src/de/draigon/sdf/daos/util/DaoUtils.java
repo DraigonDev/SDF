@@ -17,31 +17,32 @@ import de.draigon.sdf.objects.ExtendedField;
 
 
 /**
- * FIXME: Javadoc einfuegen
+ * utilclass to do operations on object extending {@link Entity}
  *
- * @author
+ * @author Draigon Development
+ * @version 1.0
  */
 public class DaoUtils {
 
-    /** FIXME: Javadoc einfuegen */
+    /** a Date-formatter*/
     public static final DateFormat DATE_FORMATTER = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
 
     /**
-     * FIXME: Javadoc einfuegen
+     * generates a random uuid and sets it to the entity
      *
-     * @param  entity
+     * @param  entity the entitiy to set a new uuid
      */
     public static <T> void generateUuid(T entity) {
         setUuid(entity, UUID.randomUUID().toString());
     }
 
     /**
-     * FIXME: Javadoc kontrollieren Liefert den Wert von all fields with superclasses
+     * returns all fields in the given class including those from its superclasses
      *
-     * @param   clazz
+     * @param   clazz the class to inspect
      *
-     * @return  Der Wert von all fields with superclasses
+     * @return  the fields
      */
     public static List<ExtendedField> getAllFieldsWithSuperclasses(Class<?> clazz) {
 
@@ -53,11 +54,11 @@ public class DaoUtils {
     }
 
     /**
-     * FIXME: Javadoc kontrollieren Liefert den Wert von all mappings with superclasses
+     * returns all relations in the given class including those from its superclasses
      *
-     * @param   clazz
+     * @param   clazz the class to inspect
      *
-     * @return  Der Wert von all mappings with superclasses
+     * @return  the mappings
      */
     public static List<ExtendedField> getAllMappingsWithSuperclasses(Class<?> clazz) {
         List<ExtendedField> fields = new ArrayList<ExtendedField>();
@@ -73,11 +74,11 @@ public class DaoUtils {
     }
 
     /**
-     * FIXME: Javadoc kontrollieren Liefert den Wert von table name from main
+     * the value of the {@link Table} annotation
      *
-     * @param   mainObjectclass
+     * @param   mainObjectclass the class to inspect
      *
-     * @return  Der Wert von table name from main
+     * @return  the mapped table 
      */
     public static String getTableName(Class<?> mainObjectclass) {
 
@@ -93,11 +94,11 @@ public class DaoUtils {
     }
 
     /**
-     * FIXME: Javadoc kontrollieren Liefert den Wert von uuid
+     * returns the value of the UUID field of an object
      *
-     * @param   entity
+     * @param   entity the object
      *
-     * @return  Der Wert von uuid
+     * @return  the value of UUID
      */
     public static <T> String getUuid(T entity) {
 
@@ -113,11 +114,11 @@ public class DaoUtils {
     }
 
     /**
-     * FIXME: Javadoc kontrollieren Liefert den Wert von entity
+     * checks if the class extends {@link Entity}
      *
-     * @param   clazz
+     * @param   clazz the class to inspect
      *
-     * @return  Der Wert von entity
+     * @return  true if the given class extends {@link Entity}
      */
     public static boolean isEntity(Class<?> clazz) {
 
@@ -142,10 +143,10 @@ public class DaoUtils {
     }
 
     /**
-     * FIXME: Javadoc kontrollieren Setzt den neuen Wert von uuid
+     * Sets the value fo uuid
      *
-     * @param  entity
-     * @param  value
+     * @param  entity the entity to set to
+     * @param  value the value to set to entity
      */
     public static void setUuid(Object entity, String value) {
 
@@ -161,11 +162,11 @@ public class DaoUtils {
     }
 
     /**
-     * FIXME: Javadoc kontrollieren Liefert den Wert von all fields with superclasses
+     * returns all fields in the given class including those from its superclasses
      *
-     * @param   clazz
+     * @param   clazz the class to inspect
      *
-     * @return  Der Wert von all fields with superclasses
+     * @return  the fields
      */
     private static List<ExtendedField> getAllFieldsWithSuperclasses(Class<?> clazz,
         Class<?> mainClass) {
@@ -183,7 +184,7 @@ public class DaoUtils {
     }
 
     /**
-     * FIXME: Javadoc kontrollieren Liefert den Wert von table name
+     * the value of {@link Table} annotation on the class
      *
      * @param   clazz
      *
