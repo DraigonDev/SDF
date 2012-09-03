@@ -1,9 +1,10 @@
 package de.draigon.sdf.objects.load;
 
 /**
- * FIXME: Javadoc einfuegen
+ * stores a relation of class to uuid as for the object relation mapping by loading the results to objects
  *
- * @author
+ * @author   Draigon Development
+ * @version  1.0
  */
 public class EntityUniqueIdentifier {
     private Class<?> clazz;
@@ -11,10 +12,10 @@ public class EntityUniqueIdentifier {
 
     
     /**
-     * FIXME: Javadoc kontrollieren Erstellt eine neue Instanz von BelongsTo.
+     * creates an instance of {@link EntityUniqueIdentifier}.
      *
-     * @param  clazz
-     * @param  uuid
+     * @param  clazzhe class mapped to
+     * @param  uuid the uuid mapped to this class
      */
     public EntityUniqueIdentifier(Class<?> clazz, String uuid) {
 
@@ -30,6 +31,9 @@ public class EntityUniqueIdentifier {
         this.uuid = uuid;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean equals(Object obj) {
 
@@ -62,23 +66,26 @@ public class EntityUniqueIdentifier {
     }
 
     /**
-     * FIXME: Javadoc kontrollieren Liefert den Wert von clazz
+     * returns the given class
      *
-     * @return  Der Wert von clazz
+     * @return  the class
      */
     public Class<?> getClazz() {
         return clazz;
     }
 
     /**
-     * FIXME: Javadoc kontrollieren Liefert den Wert von uuid
+     * returns the value of uuid
      *
-     * @return  Der Wert von uuid
+     * @return  value of uuid
      */
     public String getUuid() {
         return uuid;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -89,6 +96,9 @@ public class EntityUniqueIdentifier {
         return result;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String toString() {
         return "EntityUniqueIdentifier [clazz=" + clazz + ", uuid=" + uuid

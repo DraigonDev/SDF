@@ -150,7 +150,7 @@ public class MappingField {
      * @return  Der Wert von mapped class
      */
     public Class<?> getMappedClass() {
-        return this.field.getType();
+        return this.field.getMappedType();
     }
 
     /**

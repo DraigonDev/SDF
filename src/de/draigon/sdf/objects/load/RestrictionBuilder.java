@@ -50,7 +50,7 @@ public class RestrictionBuilder {
                 subPart = new Restriction();
 
                 for (Object object : liste) {
-                    Restriction restriction = this.buildRestriction(object, field.getType());
+                    Restriction restriction = this.buildRestriction(object, field.getMappedType());
 
                     if (!restriction.isEmpty()) {
                         subPart.addOr();
@@ -62,7 +62,7 @@ public class RestrictionBuilder {
 
             }
         } else {
-            subPart = this.buildRestriction(field.getValue(patternObject), field.getType());
+            subPart = this.buildRestriction(field.getValue(patternObject), field.getMappedType());
         }
 
         if (subPart != null && !subPart.isEmpty()) {

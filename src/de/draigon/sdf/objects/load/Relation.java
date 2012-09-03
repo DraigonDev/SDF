@@ -1,7 +1,9 @@
 package de.draigon.sdf.objects.load;
 
+import de.draigon.sdf.Entity;
+
 /**
- * FIXME: Javadoc einfuegen
+ * Container r a relation between two {@link Entity}s mapped by their uuid.
  *
  * @author
  */
@@ -38,7 +40,29 @@ public class Relation {
         this.fieldName = mappedfield.getFieldName();
         this.mappedField = mappedfield;
     }
+    
 
+    /**
+     * FIXME: Javadoc kontrollieren Liefert den Wert von field name
+     *
+     * @return  Der Wert von field name
+     */
+    public String getFieldName() {
+        return fieldName;
+    }
+
+    /**
+     * FIXME: Javadoc kontrollieren Liefert den Wert von mapped field
+     *
+     * @return  Der Wert von mapped field
+     */
+    public MappingField getMappedField() {
+        return mappedField;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean equals(Object obj) {
 
@@ -78,24 +102,6 @@ public class Relation {
     }
 
     /**
-     * FIXME: Javadoc kontrollieren Liefert den Wert von field name
-     *
-     * @return  Der Wert von field name
-     */
-    public String getFieldName() {
-        return fieldName;
-    }
-
-    /**
-     * FIXME: Javadoc kontrollieren Liefert den Wert von mapped field
-     *
-     * @return  Der Wert von mapped field
-     */
-    public MappingField getMappedField() {
-        return mappedField;
-    }
-
-    /**
      * FIXME: Javadoc kontrollieren Liefert den Wert von uuid belongs to
      *
      * @return  Der Wert von uuid belongs to
@@ -113,6 +119,9 @@ public class Relation {
         return uuidOfObject;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -124,6 +133,9 @@ public class Relation {
         return result;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String toString() {
         return "Relation [fieldName=" + fieldName + ", uuidBelongsTo=" + uuidBelongsTo
