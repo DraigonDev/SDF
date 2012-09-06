@@ -19,7 +19,17 @@ import de.draigon.sdf.objects.MappingType;
 import de.draigon.sdf.util.DB;
 import de.draigon.sdf.util.Loggin;
 
+/**
+ * Utilclass to create a schema in a database from the annotated classes.
+ * 
+ * @author Draigon Development
+ * @version 1.0
+ */
 public class TableCreator {
+	
+	/**
+	 * creates tables and mappingtables for any in the executing project existing entities.
+	 */
     public static void create() {
         Map<Class<?>, List<Column>> entities = new HashMap<Class<?>, List<Column>>();
         List<ExtendedField> manyToMany = new ArrayList<ExtendedField>();
